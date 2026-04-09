@@ -469,7 +469,7 @@ export default function AdminDistributors() {
         </div>
       )}
 
-      <DistributorDetailSheet partner={selected} open={!!selected} onClose={() => setSelected(null)} />
+      <DistributorDetailSheet partner={selected} open={!!selected} onClose={() => setSelected(null)} onPartnerUpdated={setSelected} />
       <AddDistributorSheet open={addOpen} onClose={() => setAddOpen(false)} />
     </div>
   );
