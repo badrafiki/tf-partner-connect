@@ -96,10 +96,12 @@ function DistributorDetailSheet({
   partner,
   open,
   onClose,
+  onPartnerUpdated,
 }: {
   partner: Partner | null;
   open: boolean;
   onClose: () => void;
+  onPartnerUpdated?: (p: Partner) => void;
 }) {
   const [editing, setEditing] = useState(false);
   const [resetLink, setResetLink] = useState<string | null>(null);
@@ -120,14 +122,16 @@ function DistributorDetailSheet({
 
   const updateMutation = useMutation({
     mutationFn: async (data: Partial<Partner>) => {
-      const { error } = await supabase.from("partners").update(data as any).eq("id", partner!.id);
+      const { data: updated, error } = await supabase.from("partners").update(data as any).eq("id", partner!.id).select().single();
       if (error) throw error;
+      return updated as Partner;
     },
-    onSuccess: () => {
+    onSuccess: (updated) => {
       toast.success("Partner updated");
       setEditing(false);
       queryClient.invalidateQueries({ queryKey: ["admin-partners"] });
       queryClient.invalidateQueries({ queryKey: ["admin-partner-enquiries", partner?.id] });
+      onPartnerUpdated?.(updated);
     },
     onError: (e: any) => toast.error(e.message),
   });
@@ -465,7 +469,7 @@ export default function AdminDistributors() {
         </div>
       )}
 
-      <DistributorDetailSheet partner={selected} open={!!selected} onClose={() => setSelected(null)} />
+      <DistributorDetailSheet partner={selected} open={!!selected} onClose={() => setSelected(null)} onPartnerUpdated={setSelected} />
       <AddDistributorSheet open={addOpen} onClose={() => setAddOpen(false)} />
     </div>
   );
