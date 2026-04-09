@@ -7,6 +7,7 @@ import {
   Package,
   MessageSquare,
   FileText,
+  Zap,
   LogOut,
   Menu,
 } from "lucide-react";
@@ -19,6 +20,7 @@ const adminLinks = [
   { to: "/admin/products", label: "Products", icon: Package },
   { to: "/admin/enquiries", label: "Enquiries", icon: MessageSquare },
   { to: "/admin/quotations", label: "Quotations", icon: FileText },
+  { to: "/admin/erp-sync", label: "ERP Sync", icon: Zap },
 ];
 
 const sidebarLinkClass = ({ isActive }: { isActive: boolean }) =>

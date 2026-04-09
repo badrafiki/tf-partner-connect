@@ -253,6 +253,45 @@ export type Database = {
           },
         ]
       }
+      erp_sync_log: {
+        Row: {
+          created_at: string | null
+          direction: string
+          entity_id: string | null
+          entity_type: string
+          error_message: string | null
+          event_type: string
+          id: string
+          modusys_entity_id: string | null
+          payload: Json | null
+          status: string
+        }
+        Insert: {
+          created_at?: string | null
+          direction: string
+          entity_id?: string | null
+          entity_type: string
+          error_message?: string | null
+          event_type: string
+          id?: string
+          modusys_entity_id?: string | null
+          payload?: Json | null
+          status: string
+        }
+        Update: {
+          created_at?: string | null
+          direction?: string
+          entity_id?: string | null
+          entity_type?: string
+          error_message?: string | null
+          event_type?: string
+          id?: string
+          modusys_entity_id?: string | null
+          payload?: Json | null
+          status?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string | null
@@ -284,6 +323,76 @@ export type Database = {
             columns: ["partner_id"]
             isOneToOne: false
             referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          carrier: string | null
+          created_at: string | null
+          delivered_date: string | null
+          id: string
+          modusys_order_id: string | null
+          modusys_order_number: string | null
+          notes: string | null
+          partner_id: string
+          quotation_id: string | null
+          shipped_date: string | null
+          status: string
+          tracking_number: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          carrier?: string | null
+          created_at?: string | null
+          delivered_date?: string | null
+          id?: string
+          modusys_order_id?: string | null
+          modusys_order_number?: string | null
+          notes?: string | null
+          partner_id: string
+          quotation_id?: string | null
+          shipped_date?: string | null
+          status?: string
+          tracking_number?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          carrier?: string | null
+          created_at?: string | null
+          delivered_date?: string | null
+          id?: string
+          modusys_order_id?: string | null
+          modusys_order_number?: string | null
+          notes?: string | null
+          partner_id?: string
+          quotation_id?: string | null
+          shipped_date?: string | null
+          status?: string
+          tracking_number?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_quotation_id_fkey"
+            columns: ["quotation_id"]
+            isOneToOne: false
+            referencedRelation: "quotations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_quotation_id_fkey"
+            columns: ["quotation_id"]
+            isOneToOne: false
+            referencedRelation: "quotations_partner_view"
             referencedColumns: ["id"]
           },
         ]
@@ -336,6 +445,8 @@ export type Database = {
           discount_percentage: number
           ein: string | null
           id: string
+          modusys_customer_id: string | null
+          modusys_synced_at: string | null
           phone: string | null
           state: string | null
           tier_label: string
@@ -352,6 +463,8 @@ export type Database = {
           discount_percentage?: number
           ein?: string | null
           id?: string
+          modusys_customer_id?: string | null
+          modusys_synced_at?: string | null
           phone?: string | null
           state?: string | null
           tier_label?: string
@@ -368,6 +481,8 @@ export type Database = {
           discount_percentage?: number
           ein?: string | null
           id?: string
+          modusys_customer_id?: string | null
+          modusys_synced_at?: string | null
           phone?: string | null
           state?: string | null
           tier_label?: string
@@ -427,6 +542,8 @@ export type Database = {
           expires_at: string | null
           id: string
           issued_at: string | null
+          modusys_quote_id: string | null
+          modusys_synced_at: string | null
           notes: string | null
           partner_id: string
           pdf_url: string | null
@@ -438,6 +555,8 @@ export type Database = {
           expires_at?: string | null
           id?: string
           issued_at?: string | null
+          modusys_quote_id?: string | null
+          modusys_synced_at?: string | null
           notes?: string | null
           partner_id: string
           pdf_url?: string | null
@@ -449,6 +568,8 @@ export type Database = {
           expires_at?: string | null
           id?: string
           issued_at?: string | null
+          modusys_quote_id?: string | null
+          modusys_synced_at?: string | null
           notes?: string | null
           partner_id?: string
           pdf_url?: string | null
@@ -494,6 +615,70 @@ export type Database = {
       }
     }
     Views: {
+      orders_partner_view: {
+        Row: {
+          carrier: string | null
+          created_at: string | null
+          delivered_date: string | null
+          id: string | null
+          modusys_order_number: string | null
+          notes: string | null
+          partner_id: string | null
+          quotation_id: string | null
+          shipped_date: string | null
+          status: string | null
+          tracking_number: string | null
+        }
+        Insert: {
+          carrier?: string | null
+          created_at?: string | null
+          delivered_date?: string | null
+          id?: string | null
+          modusys_order_number?: string | null
+          notes?: string | null
+          partner_id?: string | null
+          quotation_id?: string | null
+          shipped_date?: string | null
+          status?: string | null
+          tracking_number?: string | null
+        }
+        Update: {
+          carrier?: string | null
+          created_at?: string | null
+          delivered_date?: string | null
+          id?: string | null
+          modusys_order_number?: string | null
+          notes?: string | null
+          partner_id?: string | null
+          quotation_id?: string | null
+          shipped_date?: string | null
+          status?: string | null
+          tracking_number?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_quotation_id_fkey"
+            columns: ["quotation_id"]
+            isOneToOne: false
+            referencedRelation: "quotations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_quotation_id_fkey"
+            columns: ["quotation_id"]
+            isOneToOne: false
+            referencedRelation: "quotations_partner_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products_partner_view: {
         Row: {
           category: string | null
