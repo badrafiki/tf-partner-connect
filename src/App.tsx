@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { BasketProvider } from "@/contexts/BasketContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { PartnerLayout } from "@/components/layouts/PartnerLayout";
 import { AdminLayout } from "@/components/layouts/AdminLayout";
@@ -16,6 +17,7 @@ import PendingActivationPage from "@/pages/PendingActivationPage";
 import PortalDashboard from "@/pages/portal/PortalDashboard";
 import PortalProducts from "@/pages/portal/PortalProducts";
 import PortalBasket from "@/pages/portal/PortalBasket";
+import PortalBasketSubmitted from "@/pages/portal/PortalBasketSubmitted";
 import PortalQuotations from "@/pages/portal/PortalQuotations";
 import PortalAccount from "@/pages/portal/PortalAccount";
 
