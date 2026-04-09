@@ -338,7 +338,7 @@ export default function PortalProducts() {
                       </div>
                       <Button
                         className="flex-1 h-10 bg-primary hover:bg-primary/90"
-                        onClick={() => handleAdd(p.id!)}
+                        onClick={() => handleAdd(p)}
                       >
                         Add to basket
                       </Button>
