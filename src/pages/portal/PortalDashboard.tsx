@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import {
   FileText, ShoppingCart, DollarSign, Percent, Tag, Package, Bell,
-  Mail
+  Mail, Truck
 } from "lucide-react";
 
 const tierColors: Record<string, { bg: string; text: string }> = {
@@ -81,6 +81,19 @@ export default function PortalDashboard() {
         .select("id, status, issued_at, expires_at, notes")
         .eq("partner_id", partnerId!);
       return data || [];
+    },
+    enabled: !!partnerId,
+  });
+
+  const { data: orders = [] } = useQuery({
+    queryKey: ["partner-orders-dashboard", partnerId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("orders_partner_view" as any)
+        .select("*")
+        .eq("partner_id", partnerId!)
+        .order("created_at", { ascending: false });
+      return (data || []) as any[];
     },
     enabled: !!partnerId,
   });
@@ -257,6 +270,11 @@ export default function PortalDashboard() {
           <div className="grid gap-3 sm:grid-cols-3">
             {recentEnquiries.map((e) => {
               const items = Array.isArray(e.line_items) ? e.line_items : [];
+              // Find quotation for this enquiry
+              const linkedQt = quotations.find((q) => q.id && e.id && quotations.some((qq: any) => qq.enquiry_id === e.id));
+              const acceptedQt = quotations.find((q: any) => q.enquiry_id === e.id && q.status === "accepted");
+              const linkedOrder = acceptedQt ? orders.find((o: any) => o.quotation_id === acceptedQt.id) : null;
+
               return (
                 <Card key={e.id}>
                   <CardContent className="pt-5 space-y-1">
@@ -269,6 +287,21 @@ export default function PortalDashboard() {
                       <Link to="/portal/quotations" className="block text-sm font-medium hover:underline mt-1" style={{ color: "#1B3A6B" }}>
                         Quotation ready →
                       </Link>
+                    )}
+                    {linkedOrder && (
+                      <div className="mt-1 text-xs space-y-0.5">
+                        <p className="font-medium">
+                          Order ORD-{linkedOrder.modusys_order_number || linkedOrder.id?.slice(0, 8)}: {linkedOrder.status === "in_progress" ? "Processing" : linkedOrder.status}
+                        </p>
+                        {linkedOrder.status === "shipped" && linkedOrder.tracking_number && (
+                          <p className="flex items-center gap-1 text-muted-foreground">
+                            <Truck className="h-3 w-3" /> {linkedOrder.tracking_number}
+                          </p>
+                        )}
+                        <Link to="/portal/orders" className="text-xs hover:underline" style={{ color: "#1B3A6B" }}>
+                          View order →
+                        </Link>
+                      </div>
                     )}
                   </CardContent>
                 </Card>

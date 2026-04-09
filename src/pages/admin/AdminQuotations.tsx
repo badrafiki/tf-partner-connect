@@ -11,9 +11,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
-import { Search, Upload, CalendarIcon, Check, ExternalLink, Send } from "lucide-react";
+import { Search, Upload, CalendarIcon, Check, ExternalLink, Send, CheckCircle2, Loader2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
-import { format } from "date-fns";
+import { format, formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 
 const statusColors: Record<string, string> = {
@@ -196,6 +196,72 @@ export default function AdminQuotations() {
           )}
         </SheetContent>
       </Sheet>
+    </div>
+  );
+}
+
+/* ───── ModuSys Push Section ───── */
+function ModuSysPushSection({ quotation, onUpdated }: { quotation: any; onUpdated: (q: any) => void }) {
+  const [pushing, setPushing] = useState(false);
+
+  const handlePush = async () => {
+    setPushing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("push-quotation-to-modusys", {
+        body: { quotation_id: quotation.id },
+      });
+      if (error) throw error;
+      if (data?.error) {
+        toast.error(data.error);
+      } else {
+        toast.success("Pushed to ModuSys");
+        // Refresh quotation data
+        const { data: updated } = await supabase
+          .from("quotations")
+          .select("*")
+          .eq("id", quotation.id)
+          .single();
+        if (updated) onUpdated(updated);
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Push failed");
+    } finally {
+      setPushing(false);
+    }
+  };
+
+  if (quotation.modusys_quote_id) {
+    return (
+      <div className="bg-green-50 border border-green-200 rounded-md p-3 space-y-1">
+        <div className="flex items-center gap-2">
+          <CheckCircle2 className="h-4 w-4 text-green-600" />
+          <span className="text-sm font-medium text-green-800">Synced to ModuSys</span>
+        </div>
+        <div className="text-xs text-muted-foreground">
+          ModuSys Quote ID: <span className="font-mono">{String(quotation.modusys_quote_id).slice(0, 8)}</span>
+        </div>
+        {quotation.modusys_synced_at && (
+          <div className="text-xs text-muted-foreground">
+            Synced {formatDistanceToNow(new Date(quotation.modusys_synced_at), { addSuffix: true })}
+          </div>
+        )}
+        <p className="text-xs text-muted-foreground italic">
+          This quote will sync to Zoho Books as an estimate via ModuSys.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-muted rounded-md p-3 space-y-2">
+      <div className="flex items-center gap-2">
+        <AlertCircle className="h-4 w-4 text-muted-foreground" />
+        <span className="text-sm text-muted-foreground">This quotation has not been pushed to ModuSys.</span>
+      </div>
+      <Button variant="outline" size="sm" onClick={handlePush} disabled={pushing} style={{ color: "#1B3A6B", borderColor: "#1B3A6B" }}>
+        {pushing ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : null}
+        {pushing ? "Pushing..." : "Push to ModuSys"}
+      </Button>
     </div>
   );
 }
@@ -402,6 +468,12 @@ function QuotationManageSheet({ quotation, partner, enquiry, onUpdated }: {
       <div>
         <p className="text-sm font-medium mb-1">Internal notes <span className="text-muted-foreground font-normal">(admin only)</span></p>
         <Textarea value={adminNotes} onChange={(e) => setAdminNotes(e.target.value)} onBlur={saveAdminNotes} rows={3} />
+      </div>
+
+      {/* ModuSys Section */}
+      <div>
+        <p className="text-sm font-medium mb-2">ModuSys</p>
+        <ModuSysPushSection quotation={quotation} onUpdated={onUpdated} />
       </div>
 
       {/* Status management */}

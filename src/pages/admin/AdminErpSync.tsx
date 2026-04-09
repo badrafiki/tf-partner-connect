@@ -13,7 +13,7 @@ import {
 import {
   Collapsible, CollapsibleContent, CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { RefreshCw, Copy, ArrowRight, CheckCircle2, XCircle, Clock, ChevronDown, Loader2, AlertCircle, Users } from "lucide-react";
+import { RefreshCw, Copy, ArrowRight, CheckCircle2, XCircle, Clock, ChevronDown, Loader2, AlertCircle, Users, Package } from "lucide-react";
 import { toast } from "sonner";
 import { formatDistanceToNow, format } from "date-fns";
 import type { Tables } from "@/integrations/supabase/types";
@@ -99,6 +99,37 @@ export default function AdminErpSync() {
 
   const syncedCount = partners.filter(p => p.modusys_customer_id).length;
   const unsyncedPartners = partners.filter(p => !p.modusys_customer_id);
+
+  // Order sync stats
+  const { data: orderStats } = useQuery({
+    queryKey: ["erp-order-stats"],
+    queryFn: async () => {
+      const { count: totalOrders } = await supabase
+        .from("orders")
+        .select("*", { count: "exact", head: true });
+      const { count: syncedOrders } = await supabase
+        .from("orders")
+        .select("*", { count: "exact", head: true })
+        .not("modusys_order_id", "is", null);
+      const { count: unsyncedOrders } = await supabase
+        .from("orders")
+        .select("*", { count: "exact", head: true })
+        .is("modusys_order_id", null);
+      const { data: lastOrderEvent } = await supabase
+        .from("erp_sync_log")
+        .select("*")
+        .in("event_type", ["order_created", "order_status_synced"])
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      return {
+        total: totalOrders ?? 0,
+        synced: syncedOrders ?? 0,
+        unsynced: unsyncedOrders ?? 0,
+        lastEvent: lastOrderEvent,
+      };
+    },
+  });
 
   const lastSyncEntry = (() => {
     if (!lastSync && !lastPullSync) return null;
@@ -313,6 +344,47 @@ export default function AdminErpSync() {
               <RefreshCw className={`h-4 w-4 mr-2 ${pulling ? "animate-spin" : ""}`} />
               {pulling ? "Pulling..." : "Pull latest stock now"}
             </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Order Sync */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Package className="h-5 w-5" />
+            Order Sync
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="bg-muted rounded-md p-3">
+              <div className="text-sm text-muted-foreground">Total orders</div>
+              <div className="text-xl font-bold">{orderStats?.total ?? 0}</div>
+            </div>
+            <div className="bg-green-50 border border-green-200 rounded-md p-3">
+              <div className="text-sm text-muted-foreground">Synced to ModuSys</div>
+              <div className="text-xl font-bold text-green-700">{orderStats?.synced ?? 0}</div>
+            </div>
+            <div className={`rounded-md p-3 border ${(orderStats?.unsynced ?? 0) > 0 ? "bg-amber-50 border-amber-200" : "bg-muted border-border"}`}>
+              <div className="text-sm text-muted-foreground">Pending sync</div>
+              <div className="flex items-center gap-2">
+                <span className={`text-xl font-bold ${(orderStats?.unsynced ?? 0) > 0 ? "text-amber-700" : "text-muted-foreground"}`}>
+                  {orderStats?.unsynced ?? 0}
+                </span>
+                {(orderStats?.unsynced ?? 0) > 0 && (
+                  <Badge className="bg-amber-100 text-amber-800 text-xs">!</Badge>
+                )}
+              </div>
+            </div>
+            <div className="bg-muted rounded-md p-3">
+              <div className="text-sm text-muted-foreground">Last order event</div>
+              <div className="text-sm font-medium">
+                {orderStats?.lastEvent?.created_at
+                  ? formatDistanceToNow(new Date(orderStats.lastEvent.created_at), { addSuffix: true })
+                  : "Never"}
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
