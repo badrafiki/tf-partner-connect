@@ -27,6 +27,7 @@ import AdminDistributors from "@/pages/admin/AdminDistributors";
 import AdminProducts from "@/pages/admin/AdminProducts";
 import AdminEnquiries from "@/pages/admin/AdminEnquiries";
 import AdminQuotations from "@/pages/admin/AdminQuotations";
+import AdminErpSync from "@/pages/admin/AdminErpSync";
 
 import NotFound from "@/pages/NotFound";
 
@@ -82,6 +83,7 @@ const App = () => (
               <Route path="products" element={<AdminProducts />} />
               <Route path="enquiries" element={<AdminEnquiries />} />
               <Route path="quotations" element={<AdminQuotations />} />
+              <Route path="erp-sync" element={<AdminErpSync />} />
             </Route>
 
 
