@@ -100,6 +100,7 @@ function DistributorDetailSheet({
   partner: Partner | null;
   open: boolean;
   onClose: () => void;
+  onPartnerUpdated?: (p: Partner) => void;
 }) {
   const [editing, setEditing] = useState(false);
   const [resetLink, setResetLink] = useState<string | null>(null);
