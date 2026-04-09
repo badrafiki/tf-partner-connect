@@ -21,6 +21,7 @@ const navLinks = [
   { to: "/portal/products", label: "Products" },
   { to: "/portal/basket", label: "Basket" },
   { to: "/portal/quotations", label: "Quotations" },
+  { to: "/portal/orders", label: "Orders" },
   { to: "/portal/enquiries", label: "History" },
 ];
 
