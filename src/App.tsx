@@ -84,6 +84,14 @@ const App = () => (
               <Route path="quotations" element={<AdminQuotations />} />
             </Route>
 
+            {/* Preview Catalog Concepts */}
+            <Route path="/preview" element={<PreviewLayout />}>
+              <Route path="catalog-1" element={<Catalog1 />} />
+              <Route path="catalog-2" element={<Catalog2 />} />
+              <Route path="catalog-3" element={<Catalog3 />} />
+              <Route path="catalog-4" element={<Catalog4 />} />
+            </Route>
+
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
