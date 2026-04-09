@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Search, Plus, Pencil, ToggleLeft, ToggleRight, Users } from "lucide-react";
+import { Search, Plus, Pencil, ToggleLeft, ToggleRight, Users, CheckCircle2, AlertCircle, RefreshCw, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -16,12 +16,19 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import {
+  Popover, PopoverContent, PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Tooltip, TooltipContent, TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { US_STATES } from "@/lib/us-states";
 import type { Tables } from "@/integrations/supabase/types";
+import { formatDistanceToNow } from "date-fns";
 
 type Partner = Tables<"partners">;
 
@@ -88,6 +95,42 @@ function PartnerForm({
         {saving ? "Saving..." : "Save changes"}
       </Button>
     </div>
+  );
+}
+
+/* ───── ModuSys Sync Button ───── */
+function ModuSysSyncButton({ partner, onSynced }: { partner: Partner; onSynced: (p: Partner) => void }) {
+  const [syncing, setSyncing] = useState(false);
+
+  const handleSync = async (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setSyncing(true);
+    try {
+      const fnName = partner.modusys_customer_id ? "update-modusys-customer" : "create-modusys-customer";
+      const { data, error } = await supabase.functions.invoke(fnName, {
+        body: { partner_id: partner.id },
+      });
+      if (error) throw error;
+      if (data?.error) {
+        toast.error(`Sync failed: ${data.error}`);
+      } else {
+        toast.success(partner.modusys_customer_id ? "Customer re-synced to ModuSys" : "Customer created in ModuSys");
+        // Fetch updated partner
+        const { data: updated } = await supabase.from("partners").select("*").eq("id", partner.id).single();
+        if (updated) onSynced(updated as Partner);
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Sync failed");
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  return (
+    <Button size="sm" variant="outline" onClick={handleSync} disabled={syncing}>
+      {syncing ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <RefreshCw className="h-3 w-3 mr-1" />}
+      {partner.modusys_customer_id ? "Re-sync" : "Sync now"}
+    </Button>
   );
 }
 
@@ -208,6 +251,38 @@ function DistributorDetailSheet({
               <div><p className="text-muted-foreground">Rep</p><p className="font-medium">{partner.assigned_rep || "—"}</p></div>
               <div><p className="text-muted-foreground">Discount</p><p className="font-medium text-green-600">{partner.discount_percentage}%</p></div>
               <div><p className="text-muted-foreground">Account linked</p><p className="font-medium">{partner.user_id ? "Yes" : "No"}</p></div>
+            </div>
+
+            <Separator />
+
+            {/* ModuSys Section */}
+            <div>
+              <p className="text-sm font-semibold mb-2">ModuSys</p>
+              {partner.modusys_customer_id ? (
+                <div className="bg-green-50 border border-green-200 rounded-md p-3 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                    <span className="text-sm font-medium text-green-800">Customer synced</span>
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    <span className="font-mono">{String(partner.modusys_customer_id).slice(0, 12)}…</span>
+                  </div>
+                  {partner.modusys_synced_at && (
+                    <div className="text-xs text-muted-foreground">
+                      Synced {formatDistanceToNow(new Date(partner.modusys_synced_at), { addSuffix: true })}
+                    </div>
+                  )}
+                  <ModuSysSyncButton partner={partner} onSynced={(p) => onPartnerUpdated?.(p)} />
+                </div>
+              ) : (
+                <div className="bg-muted rounded-md p-3 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <AlertCircle className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">Not synced to ModuSys</span>
+                  </div>
+                  <ModuSysSyncButton partner={partner} onSynced={(p) => onPartnerUpdated?.(p)} />
+                </div>
+              )}
             </div>
 
             <Separator />
@@ -333,6 +408,40 @@ function AddDistributorSheet({
   );
 }
 
+/* ───── ModuSys Status Cell ───── */
+function ModuSysStatusCell({ partner, onSynced }: { partner: Partner; onSynced: (p: Partner) => void }) {
+  if (partner.modusys_customer_id) {
+    return (
+      <Tooltip>
+        <TooltipTrigger>
+          <span className="flex items-center gap-1 text-green-700 text-xs font-medium">
+            <CheckCircle2 className="h-3.5 w-3.5" /> Synced
+          </span>
+        </TooltipTrigger>
+        <TooltipContent>
+          {partner.modusys_synced_at
+            ? `Synced ${formatDistanceToNow(new Date(partner.modusys_synced_at), { addSuffix: true })}`
+            : "Synced"}
+        </TooltipContent>
+      </Tooltip>
+    );
+  }
+
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button className="flex items-center gap-1 text-amber-600 text-xs font-medium hover:underline" onClick={e => e.stopPropagation()}>
+          <AlertCircle className="h-3.5 w-3.5" /> Not synced
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-52" onClick={e => e.stopPropagation()}>
+        <p className="text-sm mb-2">Sync to ModuSys?</p>
+        <ModuSysSyncButton partner={partner} onSynced={onSynced} />
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 /* ───── Main Page ───── */
 export default function AdminDistributors() {
   const [search, setSearch] = useState("");
@@ -371,6 +480,11 @@ export default function AdminDistributors() {
       toast.success("Status updated");
     },
   });
+
+  const handlePartnerSynced = (updated: Partner) => {
+    queryClient.invalidateQueries({ queryKey: ["admin-partners"] });
+    if (selected?.id === updated.id) setSelected(updated);
+  };
 
   const statusFilters = [
     { value: "all" as const, label: "All" },
@@ -423,6 +537,7 @@ export default function AdminDistributors() {
                 <TableHead>Discount</TableHead>
                 <TableHead>Tier</TableHead>
                 <TableHead>Rep</TableHead>
+                <TableHead>ModuSys</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="w-24">Actions</TableHead>
               </TableRow>
@@ -448,6 +563,9 @@ export default function AdminDistributors() {
                   <TableCell><Badge variant="secondary">{p.tier_label}</Badge></TableCell>
                   <TableCell className="text-sm text-muted-foreground">{p.assigned_rep || "—"}</TableCell>
                   <TableCell>
+                    <ModuSysStatusCell partner={p} onSynced={handlePartnerSynced} />
+                  </TableCell>
+                  <TableCell>
                     <Badge variant={p.active ? "default" : "outline"} className={p.active ? "bg-green-100 text-green-800 border-green-200" : ""}>
                       {p.active ? "Active" : "Inactive"}
                     </Badge>
@@ -469,7 +587,7 @@ export default function AdminDistributors() {
         </div>
       )}
 
-      <DistributorDetailSheet partner={selected} open={!!selected} onClose={() => setSelected(null)} onPartnerUpdated={setSelected} />
+      <DistributorDetailSheet partner={selected} open={!!selected} onClose={() => setSelected(null)} onPartnerUpdated={handlePartnerSynced} />
       <AddDistributorSheet open={addOpen} onClose={() => setAddOpen(false)} />
     </div>
   );
