@@ -26,7 +26,6 @@ const SECTION_TITLES = [
   "Shipping & Delivery",
   "Credit & Payment",
   "Tax & Compliance",
-  "Trade References",
   "Distribution Profile",
 ];
 
@@ -114,11 +113,6 @@ export default function ApplicationPage() {
       ship_same_as_business: false,
       ship_additional_locations: false,
       tax_exempt: false,
-      trade_references: [
-        { company_name: "", contact_name: "", title: "", phone: "", email: "", relationship: "" },
-        { company_name: "", contact_name: "", title: "", phone: "", email: "", relationship: "" },
-        { company_name: "", contact_name: "", title: "", phone: "", email: "", relationship: "" },
-      ],
     },
   });
 
@@ -141,8 +135,7 @@ export default function ApplicationPage() {
       case 3: return watchAll.ship_same_as_business || !!watchAll.ship_address_street;
       case 4: return !!watchAll.requested_credit_limit || !!watchAll.requested_payment_terms;
       case 5: return watchAll.tax_exempt !== undefined;
-      case 6: return !!watchAll.trade_references?.[0]?.company_name;
-      case 7: return !!watchAll.geographic_coverage || !!watchAll.how_heard;
+      case 6: return !!watchAll.geographic_coverage || !!watchAll.how_heard;
       default: return false;
     }
   });
@@ -735,52 +728,9 @@ export default function ApplicationPage() {
           </InfoBox>
         </SectionCard>
 
-        {/* S7 — Trade References */}
-        <SectionCard index={6} title="Trade References" id="section-6">
+        {/* S7 — Distribution Profile */}
+        <SectionCard index={6} title="Distribution Profile" id="section-6">
           <div ref={(el) => { sectionRefs.current[6] = el?.parentElement ?? null; }} />
-          <p className="text-sm text-muted-foreground mb-4">
-            Please provide a minimum of three (3) trade references — current suppliers or creditors with whom you have an established account.
-          </p>
-          {[0, 1, 2].map((i) => (
-            <div key={i} className="border border-border rounded-md p-4 mb-4">
-              <p className="text-sm font-medium text-foreground mb-3">Reference {i + 1}</p>
-              <FieldRow>
-                <div>
-                  <Label>Company Name</Label>
-                  <Input {...register(`trade_references.${i}.company_name`)} />
-                </div>
-                <div>
-                  <Label>Contact Name</Label>
-                  <Input {...register(`trade_references.${i}.contact_name`)} />
-                </div>
-              </FieldRow>
-              <FieldRow>
-                <div>
-                  <Label>Title</Label>
-                  <Input {...register(`trade_references.${i}.title`)} />
-                </div>
-                <div>
-                  <Label>Phone</Label>
-                  <Input {...register(`trade_references.${i}.phone`)} type="tel" />
-                </div>
-              </FieldRow>
-              <FieldRow>
-                <div>
-                  <Label>Email</Label>
-                  <Input {...register(`trade_references.${i}.email`)} type="email" />
-                </div>
-                <div>
-                  <Label>Relationship / Account Type</Label>
-                  <Input {...register(`trade_references.${i}.relationship`)} />
-                </div>
-              </FieldRow>
-            </div>
-          ))}
-        </SectionCard>
-
-        {/* S8 — Distribution Profile */}
-        <SectionCard index={7} title="Distribution Profile" id="section-7">
-          <div ref={(el) => { sectionRefs.current[7] = el?.parentElement ?? null; }} />
 
           <div className="mb-4">
             <Label className="mb-2 block">Geographic Coverage</Label>
