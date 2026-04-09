@@ -65,7 +65,7 @@ Deno.serve(async (req) => {
     }
 
     // Send email to admin
-    const emailRes = await fetch("https://api.resend.com/emails", {
+    await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -90,6 +90,21 @@ Deno.serve(async (req) => {
         `,
       }),
     });
+
+    // If accepted, fire create-modusys-order (fire and forget)
+    if (response === "accepted") {
+      fetch(
+        `${supabaseUrl}/functions/v1/create-modusys-order`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${serviceRoleKey}`,
+          },
+          body: JSON.stringify({ quotation_id }),
+        }
+      ).catch((err) => console.error("Order creation failed:", err));
+    }
 
     return new Response(JSON.stringify({ success: true }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
