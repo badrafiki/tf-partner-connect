@@ -9,6 +9,9 @@ interface AuthState {
   partnerId: string | null;
   discountPercentage: number;
   companyName: string | null;
+  contactName: string | null;
+  tierLabel: string | null;
+  assignedRep: string | null;
   loading: boolean;
 }
 
