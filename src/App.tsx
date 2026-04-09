@@ -18,6 +18,7 @@ import PortalDashboard from "@/pages/portal/PortalDashboard";
 import PortalProducts from "@/pages/portal/PortalProducts";
 import PortalBasket from "@/pages/portal/PortalBasket";
 import PortalBasketSubmitted from "@/pages/portal/PortalBasketSubmitted";
+import PortalEnquiries from "@/pages/portal/PortalEnquiries";
 import PortalQuotations from "@/pages/portal/PortalQuotations";
 import PortalAccount from "@/pages/portal/PortalAccount";
 
@@ -67,6 +68,7 @@ const App = () => (
               <Route path="products" element={<PortalProducts />} />
               <Route path="basket" element={<PortalBasket />} />
               <Route path="basket/submitted" element={<PortalBasketSubmitted />} />
+              <Route path="enquiries" element={<PortalEnquiries />} />
               <Route path="quotations" element={<PortalQuotations />} />
               <Route path="account" element={<PortalAccount />} />
             </Route>

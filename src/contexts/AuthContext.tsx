@@ -9,6 +9,9 @@ interface AuthState {
   partnerId: string | null;
   discountPercentage: number;
   companyName: string | null;
+  contactName: string | null;
+  tierLabel: string | null;
+  assignedRep: string | null;
   loading: boolean;
 }
 
@@ -21,19 +24,14 @@ interface AuthContextType extends AuthState {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const emptyPartner = { partnerId: null, discountPercentage: 0, companyName: null, contactName: null, tierLabel: null, assignedRep: null };
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AuthState>({
-    user: null,
-    session: null,
-    role: null,
-    partnerId: null,
-    discountPercentage: 0,
-    companyName: null,
-    loading: true,
+    user: null, session: null, role: null, ...emptyPartner, loading: true,
   });
 
   const loadUserData = async (user: User) => {
-    // Load role
     const { data: roleData } = await supabase
       .from("user_roles")
       .select("role")
@@ -42,51 +40,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const role = (roleData?.role as "admin" | "partner") ?? null;
 
-    let partnerId: string | null = null;
-    let discountPercentage = 0;
-    let companyName: string | null = null;
+    let partnerFields = { ...emptyPartner };
 
     if (role === "partner") {
       const { data: partnerData } = await supabase
         .from("partners")
-        .select("id, discount_percentage, company_name")
+        .select("id, discount_percentage, company_name, contact_name, tier_label, assigned_rep")
         .eq("user_id", user.id)
         .maybeSingle();
 
       if (partnerData) {
-        partnerId = partnerData.id;
-        discountPercentage = Number(partnerData.discount_percentage) || 0;
-        companyName = partnerData.company_name;
+        partnerFields = {
+          partnerId: partnerData.id,
+          discountPercentage: Number(partnerData.discount_percentage) || 0,
+          companyName: partnerData.company_name,
+          contactName: partnerData.contact_name,
+          tierLabel: partnerData.tier_label,
+          assignedRep: partnerData.assigned_rep,
+        };
       }
     }
 
-    return { role, partnerId, discountPercentage, companyName };
+    return { role, ...partnerFields };
   };
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (session?.user) {
-          // Use setTimeout to avoid potential Supabase deadlock
           setTimeout(async () => {
             const userData = await loadUserData(session.user);
-            setState({
-              user: session.user,
-              session,
-              ...userData,
-              loading: false,
-            });
+            setState({ user: session.user, session, ...userData, loading: false });
           }, 0);
         } else {
-          setState({
-            user: null,
-            session: null,
-            role: null,
-            partnerId: null,
-            discountPercentage: 0,
-            companyName: null,
-            loading: false,
-          });
+          setState({ user: null, session: null, role: null, ...emptyPartner, loading: false });
         }
       }
     );
@@ -94,12 +81,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session?.user) {
         const userData = await loadUserData(session.user);
-        setState({
-          user: session.user,
-          session,
-          ...userData,
-          loading: false,
-        });
+        setState({ user: session.user, session, ...userData, loading: false });
       } else {
         setState((s) => ({ ...s, loading: false }));
       }
