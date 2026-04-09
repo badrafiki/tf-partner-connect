@@ -68,6 +68,7 @@ const App = () => (
               <Route path="products" element={<PortalProducts />} />
               <Route path="basket" element={<PortalBasket />} />
               <Route path="basket/submitted" element={<PortalBasketSubmitted />} />
+              <Route path="enquiries" element={<PortalEnquiries />} />
               <Route path="quotations" element={<PortalQuotations />} />
               <Route path="account" element={<PortalAccount />} />
             </Route>
