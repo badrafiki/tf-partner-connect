@@ -213,7 +213,7 @@ export function ApplicationDetailSheet({ application, onClose, onRefresh }: Prop
 
   if (!app) return null;
 
-  const tradeRefs = Array.isArray(app.trade_references) ? app.trade_references : [];
+  
   const maskedAccount = app.bank_account_number
     ? "••••" + app.bank_account_number.slice(-4)
     : "—";
@@ -316,28 +316,7 @@ export function ApplicationDetailSheet({ application, onClose, onRefresh }: Prop
               <ReadOnlyField label="Resale States" value={app.resale_states} />
             </div>
 
-            {/* S7 — Trade References */}
-            <SectionHeader title="Trade References" />
-            {tradeRefs.length === 0 ? (
-              <p className="text-sm text-muted-foreground">None provided</p>
-            ) : (
-              <div className="space-y-3">
-                {tradeRefs.map((ref: any, i: number) => (
-                  <div key={i} className="border rounded-md p-3 text-sm">
-                    <p className="font-medium">{ref.company_name || "—"}</p>
-                    <div className="grid grid-cols-2 gap-x-4 mt-1 text-muted-foreground">
-                      <span>Contact: {ref.contact_name || "—"}</span>
-                      <span>Title: {ref.title || "—"}</span>
-                      <span>Phone: {ref.phone || "—"}</span>
-                      <span>Email: {ref.email || "—"}</span>
-                      <span className="col-span-2">Relationship: {ref.relationship || "—"}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* S8 — Distribution */}
+            {/* S7 — Distribution */}
             <SectionHeader title="Distribution Profile" />
             <div className="grid grid-cols-2 gap-x-4">
               <ReadOnlyField label="Geographic Coverage" value={app.geographic_coverage} />

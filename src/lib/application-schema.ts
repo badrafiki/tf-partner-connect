@@ -1,14 +1,5 @@
 import { z } from "zod";
 
-const tradeReferenceSchema = z.object({
-  company_name: z.string().optional().default(""),
-  contact_name: z.string().optional().default(""),
-  title: z.string().optional().default(""),
-  phone: z.string().optional().default(""),
-  email: z.string().optional().default(""),
-  relationship: z.string().optional().default(""),
-});
-
 export const applicationSchema = z.object({
   // Section 1 — Business Information
   legal_business_name: z.string().min(1, "Legal business name is required"),
@@ -75,14 +66,7 @@ export const applicationSchema = z.object({
   resale_certificate_status: z.string().optional().default(""),
   resale_states: z.string().optional().default(""),
 
-  // Section 7 — Trade References
-  trade_references: z.array(tradeReferenceSchema).default([
-    { company_name: "", contact_name: "", title: "", phone: "", email: "", relationship: "" },
-    { company_name: "", contact_name: "", title: "", phone: "", email: "", relationship: "" },
-    { company_name: "", contact_name: "", title: "", phone: "", email: "", relationship: "" },
-  ]),
-
-  // Section 8 — Distribution Profile
+  // Section 7 — Distribution Profile
   geographic_coverage: z.string().optional().default(""),
   sales_channels: z.string().optional().default(""),
   industries_served: z.string().optional().default(""),
