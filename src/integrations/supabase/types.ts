@@ -422,6 +422,7 @@ export type Database = {
       }
       quotations: {
         Row: {
+          admin_notes: string | null
           enquiry_id: string | null
           expires_at: string | null
           id: string
@@ -432,6 +433,7 @@ export type Database = {
           status: string
         }
         Insert: {
+          admin_notes?: string | null
           enquiry_id?: string | null
           expires_at?: string | null
           id?: string
@@ -442,6 +444,7 @@ export type Database = {
           status?: string
         }
         Update: {
+          admin_notes?: string | null
           enquiry_id?: string | null
           expires_at?: string | null
           id?: string
@@ -532,6 +535,54 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      quotations_partner_view: {
+        Row: {
+          enquiry_id: string | null
+          expires_at: string | null
+          id: string | null
+          issued_at: string | null
+          notes: string | null
+          partner_id: string | null
+          pdf_url: string | null
+          status: string | null
+        }
+        Insert: {
+          enquiry_id?: string | null
+          expires_at?: string | null
+          id?: string | null
+          issued_at?: string | null
+          notes?: string | null
+          partner_id?: string | null
+          pdf_url?: string | null
+          status?: string | null
+        }
+        Update: {
+          enquiry_id?: string | null
+          expires_at?: string | null
+          id?: string | null
+          issued_at?: string | null
+          notes?: string | null
+          partner_id?: string | null
+          pdf_url?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quotations_enquiry_id_fkey"
+            columns: ["enquiry_id"]
+            isOneToOne: false
+            referencedRelation: "enquiries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quotations_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Functions: {
