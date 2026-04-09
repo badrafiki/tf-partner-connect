@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { Search, Heart, Plus, Minus, ShoppingCart } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useBasket } from "@/contexts/BasketContext";
 import type { Tables } from "@/integrations/supabase/types";
 
 type Product = Tables<"products_partner_view">;
@@ -134,11 +135,22 @@ export default function PortalProducts() {
   const getPartnerPrice = (list: number | null) => (list ?? 0) * (1 - discount);
   const getSaving = (list: number | null) => (list ?? 0) * discount;
 
-  const handleAdd = (id: string) => {
-    setAddedItems((prev) => new Set(prev).add(id));
+  const { addItem } = useBasket();
+
+  const handleAdd = (p: Product) => {
+    const qty = getQty(p.id!);
+    addItem({
+      product_id: p.id!,
+      sku: p.sku ?? "",
+      name: p.name ?? "",
+      category: p.category,
+      list_price_usd: p.list_price_usd ?? 0,
+    }, qty);
+    setAddedItems((prev) => new Set(prev).add(p.id!));
     setAddingCard(null);
+    setQuantities((prev) => ({ ...prev, [p.id!]: 1 }));
     toast.success("Added to basket");
-    setTimeout(() => setAddedItems((prev) => { const n = new Set(prev); n.delete(id); return n; }), 2000);
+    setTimeout(() => setAddedItems((prev) => { const n = new Set(prev); n.delete(p.id!); return n; }), 2000);
   };
 
   const getQty = (id: string) => quantities[id] || 1;
@@ -326,7 +338,7 @@ export default function PortalProducts() {
                       </div>
                       <Button
                         className="flex-1 h-10 bg-primary hover:bg-primary/90"
-                        onClick={() => handleAdd(p.id!)}
+                        onClick={() => handleAdd(p)}
                       >
                         Add to basket
                       </Button>

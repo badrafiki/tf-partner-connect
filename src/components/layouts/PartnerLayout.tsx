@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useBasket } from "@/contexts/BasketContext";
 import { Bell, Menu, ShoppingCart, User, LogOut, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -26,6 +27,7 @@ const linkClass = ({ isActive }: { isActive: boolean }) =>
 
 export function PartnerLayout() {
   const { companyName, signOut } = useAuth();
+  const { itemCount } = useBasket();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -60,9 +62,11 @@ export function PartnerLayout() {
                     <span className="flex items-center gap-1">
                       <ShoppingCart className="h-4 w-4" />
                       {link.label}
-                      <Badge className="bg-accent text-accent-foreground text-xs px-1.5 py-0 ml-1">
-                        0
-                      </Badge>
+                      {itemCount > 0 && (
+                        <Badge className="bg-accent text-accent-foreground text-xs px-1.5 py-0 ml-1">
+                          {itemCount}
+                        </Badge>
+                      )}
                     </span>
                   ) : (
                     link.label
