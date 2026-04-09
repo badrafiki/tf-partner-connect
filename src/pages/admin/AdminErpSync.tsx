@@ -13,7 +13,7 @@ import {
 import {
   Collapsible, CollapsibleContent, CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { RefreshCw, Copy, ArrowRight, CheckCircle2, XCircle, Clock, ChevronDown, Loader2, AlertCircle, Users } from "lucide-react";
+import { RefreshCw, Copy, ArrowRight, CheckCircle2, XCircle, Clock, ChevronDown, Loader2, AlertCircle, Users, Package } from "lucide-react";
 import { toast } from "sonner";
 import { formatDistanceToNow, format } from "date-fns";
 import type { Tables } from "@/integrations/supabase/types";
