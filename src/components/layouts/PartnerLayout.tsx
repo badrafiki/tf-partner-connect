@@ -20,8 +20,8 @@ const navLinks = [
   { to: "/portal/dashboard", label: "Dashboard" },
   { to: "/portal/products", label: "Products" },
   { to: "/portal/basket", label: "Basket" },
-  { to: "/portal/enquiries", label: "History" },
   { to: "/portal/quotations", label: "Quotations" },
+  { to: "/portal/enquiries", label: "History" },
 ];
 
 const linkClass = ({ isActive }: { isActive: boolean }) =>
