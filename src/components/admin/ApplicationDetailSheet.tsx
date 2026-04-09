@@ -112,7 +112,18 @@ export function ApplicationDetailSheet({ application, onClose, onRefresh }: Prop
 
       if (partnerError || !partner) throw new Error(partnerError?.message || "Failed to create partner");
 
-      // 2. Call invite-partner
+      // 2. Sync to ModuSys (non-blocking)
+      let modusysSynced = false;
+      try {
+        const moduSysResult = await supabase.functions.invoke("create-modusys-customer", {
+          body: { partner_id: partner.id },
+        });
+        modusysSynced = !!moduSysResult.data?.modusys_customer_id;
+      } catch (e) {
+        console.error("ModuSys sync failed:", e);
+      }
+
+      // 3. Call invite-partner
       const { error: inviteError } = await supabase.functions.invoke("invite-partner", {
         body: {
           email: app.contact_email,
@@ -123,7 +134,7 @@ export function ApplicationDetailSheet({ application, onClose, onRefresh }: Prop
 
       if (inviteError) throw new Error(inviteError.message || "Invite failed");
 
-      // 3. Update application status
+      // 4. Update application status
       await supabase
         .from("applications")
         .update({
@@ -133,7 +144,12 @@ export function ApplicationDetailSheet({ application, onClose, onRefresh }: Prop
         })
         .eq("id", app.id);
 
-      toast.success(`Invitation sent to ${app.contact_email}`);
+      if (modusysSynced) {
+        toast.success("Partner approved. Invitation sent. Customer record created in ModuSys.");
+      } else {
+        toast.success("Partner approved. Invitation sent.");
+        toast.warning("ModuSys sync failed — retry from ERP Sync page.");
+      }
       setShowApproveDialog(false);
       onClose();
       onRefresh();
