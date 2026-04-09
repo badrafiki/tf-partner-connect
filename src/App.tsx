@@ -44,6 +44,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
+          <BasketProvider>
           <Routes>
             {/* Public */}
             <Route path="/" element={<Navigate to="/login" replace />} />
@@ -65,6 +66,7 @@ const App = () => (
               <Route path="dashboard" element={<PortalDashboard />} />
               <Route path="products" element={<PortalProducts />} />
               <Route path="basket" element={<PortalBasket />} />
+              <Route path="basket/submitted" element={<PortalBasketSubmitted />} />
               <Route path="quotations" element={<PortalQuotations />} />
               <Route path="account" element={<PortalAccount />} />
             </Route>
