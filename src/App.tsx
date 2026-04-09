@@ -27,6 +27,12 @@ import AdminQuotations from "@/pages/admin/AdminQuotations";
 
 import NotFound from "@/pages/NotFound";
 
+import PreviewLayout from "@/pages/preview/PreviewLayout";
+import Catalog1 from "@/pages/preview/Catalog1";
+import Catalog2 from "@/pages/preview/Catalog2";
+import Catalog3 from "@/pages/preview/Catalog3";
+import Catalog4 from "@/pages/preview/Catalog4";
+
 const queryClient = new QueryClient();
 
 const App = () => (
