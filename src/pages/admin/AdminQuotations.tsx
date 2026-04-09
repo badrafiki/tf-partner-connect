@@ -11,9 +11,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
-import { Search, Upload, CalendarIcon, Check, ExternalLink, Send } from "lucide-react";
+import { Search, Upload, CalendarIcon, Check, ExternalLink, Send, CheckCircle2, Loader2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
-import { format } from "date-fns";
+import { format, formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 
 const statusColors: Record<string, string> = {
@@ -402,6 +402,12 @@ function QuotationManageSheet({ quotation, partner, enquiry, onUpdated }: {
       <div>
         <p className="text-sm font-medium mb-1">Internal notes <span className="text-muted-foreground font-normal">(admin only)</span></p>
         <Textarea value={adminNotes} onChange={(e) => setAdminNotes(e.target.value)} onBlur={saveAdminNotes} rows={3} />
+      </div>
+
+      {/* ModuSys Section */}
+      <div>
+        <p className="text-sm font-medium mb-2">ModuSys</p>
+        <ModuSysPushSection quotation={quotation} onUpdated={onUpdated} />
       </div>
 
       {/* Status management */}
