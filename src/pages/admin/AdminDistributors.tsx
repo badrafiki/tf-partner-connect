@@ -96,6 +96,7 @@ function DistributorDetailSheet({
   partner,
   open,
   onClose,
+  onPartnerUpdated,
 }: {
   partner: Partner | null;
   open: boolean;
