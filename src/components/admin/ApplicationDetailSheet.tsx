@@ -213,7 +213,7 @@ export function ApplicationDetailSheet({ application, onClose, onRefresh }: Prop
 
   if (!app) return null;
 
-  const tradeRefs = Array.isArray(app.trade_references) ? app.trade_references : [];
+  
   const maskedAccount = app.bank_account_number
     ? "••••" + app.bank_account_number.slice(-4)
     : "—";
