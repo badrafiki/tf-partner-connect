@@ -190,23 +190,17 @@ export default function ApplicationPage() {
       if (payload[k] === "") payload[k] = null;
     });
 
-    const { data: inserted, error } = await supabase
-      .from("applications")
-      .insert(payload as any)
-      .select("id")
-      .single();
+    const { data: result, error } = await supabase.functions.invoke("submit-application", {
+      body: payload,
+    });
 
-    if (error || !inserted) {
-      console.error("Insert error:", error);
-      setSubmitError("Something went wrong. Please try again or email us at partners@total-filtration.com");
+    if (error || result?.error) {
+      const msg = result?.error || "Something went wrong. Please try again or email us at partners@total-filtration.com";
+      console.error("Submit error:", error || result?.error);
+      setSubmitError(msg);
       setSubmitting(false);
       return;
     }
-
-    // Fire and forget notification
-    supabase.functions.invoke("notify-new-application", {
-      body: { application_id: inserted.id },
-    }).catch((err) => console.error("Notification error:", err));
 
     setContactName(data.contact_first_name);
     setContactEmailDisplay(data.contact_email);
