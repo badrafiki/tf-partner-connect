@@ -206,7 +206,7 @@ export default function PortalQuotations() {
                   {/* Actions */}
                   <div className="flex items-center gap-2 flex-wrap pt-1">
                     {q.pdf_url ? (
-                      <Button variant="outline" size="sm" asChild>
+                      <Button variant="outline" size="sm" asChild onClick={() => analytics.quotationPdfDownloaded(q.id)}>
                         <a href={q.pdf_url} target="_blank" rel="noopener noreferrer">
                           <Download className="h-4 w-4 mr-1" /> Download PDF
                         </a>

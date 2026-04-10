@@ -47,6 +47,13 @@ export default function PortalProducts() {
     return () => clearTimeout(t);
   }, [searchInput]);
 
+  // Track search after results load
+  useEffect(() => {
+    if (debouncedSearch && totalCount !== undefined) {
+      analytics.productSearched(debouncedSearch, totalCount);
+    }
+  }, [debouncedSearch, totalCount]);
+
   // Get allowed product IDs for this partner
   const { data: allowedIds } = useQuery({
     queryKey: ["partner-visible-products", partnerId],
