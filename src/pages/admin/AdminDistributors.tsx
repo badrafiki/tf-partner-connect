@@ -697,13 +697,14 @@ export default function AdminDistributors() {
                 <TableHead>Tier</TableHead>
                 <TableHead>Rep</TableHead>
                 <TableHead>ModuSys</TableHead>
+                <TableHead>Catalog</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="w-24">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filtered.map(p => (
-                <TableRow key={p.id} className="cursor-pointer" onClick={() => setSelected(p)}>
+                <TableRow key={p.id} className="cursor-pointer" onClick={() => { setSelectedTab("details"); setSelected(p); }}>
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <Avatar className="h-6 w-6">
