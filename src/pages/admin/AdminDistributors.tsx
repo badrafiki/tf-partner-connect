@@ -451,6 +451,21 @@ function DistributorDetailSheet({
             </div>
           </div>
         )}
+        {partner && (
+          <ChangeEmailModal
+            partner={partner}
+            open={emailModalOpen}
+            onClose={() => setEmailModalOpen(false)}
+            onChanged={() => {
+              queryClient.invalidateQueries({ queryKey: ["admin-partners"] });
+              const refreshPartner = async () => {
+                const { data: updated } = await supabase.from("partners").select("*").eq("id", partner.id).single();
+                if (updated) onPartnerUpdated?.(updated as Partner);
+              };
+              refreshPartner();
+            }}
+          />
+        )}
       </SheetContent>
     </Sheet>
   );
