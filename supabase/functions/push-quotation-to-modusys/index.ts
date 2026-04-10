@@ -108,7 +108,10 @@ Deno.serve(async (req) => {
 
     const termsAndConditions = `All prices are valid for 30 days from the quote date unless otherwise specified. Payment terms as per customer agreement. Delivery times are estimates and subject to confirmation.\n\nAll pricing is in USD unless otherwise specified, for our Canadian customers, your order may be subjected to GST/VAT, this is payable by the buyer.`;
 
-    const payload = {
+    // Determine if this is a re-push (update) or first push
+    const isUpdate = !!quotation.modusys_quote_id;
+
+    const payload: Record<string, unknown> = {
       modusys_customer_id: partner.modusys_customer_id,
       portal_quotation_id: quotation.id,
       quote_number: quoteNumber,
@@ -126,6 +129,12 @@ Deno.serve(async (req) => {
         line_total_partner: item.lineTotal || item.line_total_partner,
       })),
     };
+
+    // If re-pushing, include the existing ModuSys quote ID so it can upsert
+    if (isUpdate) {
+      payload.modusys_quote_id = quotation.modusys_quote_id;
+      payload.is_update = true;
+    }
 
     // POST to ModuSys
     const modusysUrl = Deno.env.get("MODUSYS_SUPABASE_URL");
