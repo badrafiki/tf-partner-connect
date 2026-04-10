@@ -18,8 +18,7 @@ const PAGE_SIZE = 24;
 function getStockStatus(qty: number | null) {
   const q = qty ?? 0;
   if (q > 10) return { label: "In stock", color: "text-green-600", dot: "bg-green-500" };
-  if (q >= 1) return { label: "Low stock", color: "text-amber-600", dot: "bg-amber-500" };
-  return { label: "Out of stock", color: "text-red-600", dot: "bg-red-500" };
+  return { label: "Low stock", color: "text-amber-600", dot: "bg-amber-500" };
 }
 
 function formatUSD(n: number) {
@@ -344,7 +343,6 @@ export default function PortalProducts() {
                         <Button
                           className="w-full h-10 bg-primary hover:bg-primary/90"
                           onClick={() => setAddingCard(p.id!)}
-                          disabled={(p.stock_qty ?? 0) === 0}
                         >
                           <ShoppingCart className="h-4 w-4 mr-2" /> Add to basket
                         </Button>
