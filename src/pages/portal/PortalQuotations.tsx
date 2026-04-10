@@ -12,6 +12,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { analytics } from "@/lib/analytics";
 
 const statusColors: Record<string, string> = {
   pending: "bg-blue-100 text-blue-800",
@@ -84,9 +85,12 @@ export default function PortalQuotations() {
         body: { quotation_id: id, response: "accepted" },
       });
     },
-    onSuccess: () => {
+    onSuccess: (_data, id) => {
       queryClient.invalidateQueries({ queryKey: ["portal-quotations"] });
       toast.success("Quotation accepted. The TF USA team has been notified.");
+      const qt = quotations.find((q: any) => q.id === id);
+      const enq = qt ? enquiryMap[qt.enquiry_id] : null;
+      analytics.quotationAccepted(id, enq ? Number(enq.total_partner_usd) : 0);
       setAcceptId(null);
     },
   });
@@ -101,9 +105,10 @@ export default function PortalQuotations() {
         body: { quotation_id: id, response: "declined", reason },
       });
     },
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["portal-quotations"] });
       toast.success("Quotation declined.");
+      analytics.quotationDeclined(variables.id);
       setDeclineId(null);
       setDeclineReason("");
     },
