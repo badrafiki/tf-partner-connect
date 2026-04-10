@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "Anyone can insert" ON public.applications;
