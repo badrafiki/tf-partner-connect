@@ -70,13 +70,14 @@ export default function PortalProducts() {
 
   const families = useMemo(() => {
     const map = new Map<string, Set<string>>();
-    allProducts.forEach((p) => {
+    const source = accessCounts || [];
+    source.forEach((p) => {
       if (!p.family) return;
       if (!map.has(p.family)) map.set(p.family, new Set());
       if (p.category) map.get(p.family)!.add(p.category);
     });
     return map;
-  }, [allProducts]);
+  }, [accessCounts]);
 
   const familyNames = useMemo(() => Array.from(families.keys()).sort(), [families]);
   const categories = useMemo(() => {
