@@ -726,6 +726,21 @@ export default function AdminDistributors() {
                     <ModuSysStatusCell partner={p} onSynced={handlePartnerSynced} />
                   </TableCell>
                   <TableCell>
+                    {(() => {
+                      const summary = accessSummary[p.id];
+                      if (!summary) return (
+                        <Badge className="bg-green-100 text-green-800 cursor-pointer" onClick={(e) => { e.stopPropagation(); setSelectedTab("product-access"); setSelected(p); }}>
+                          Full access
+                        </Badge>
+                      );
+                      return (
+                        <Badge className="bg-amber-100 text-amber-800 cursor-pointer" onClick={(e) => { e.stopPropagation(); setSelectedTab("product-access"); setSelected(p); }}>
+                          Restricted
+                        </Badge>
+                      );
+                    })()}
+                  </TableCell>
+                  <TableCell>
                     <Badge variant={p.active ? "default" : "outline"} className={p.active ? "bg-green-100 text-green-800 border-green-200" : ""}>
                       {p.active ? "Active" : "Inactive"}
                     </Badge>
