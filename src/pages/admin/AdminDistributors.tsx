@@ -588,6 +588,7 @@ export default function AdminDistributors() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
   const [selected, setSelected] = useState<Partner | null>(null);
+  const [selectedTab, setSelectedTab] = useState<string>("details");
   const [addOpen, setAddOpen] = useState(false);
   const queryClient = useQueryClient();
 
@@ -597,6 +598,23 @@ export default function AdminDistributors() {
       const { data, error } = await supabase.from("partners").select("*").order("company_name");
       if (error) throw error;
       return data as Partner[];
+    },
+  });
+
+  // Fetch access rule counts per partner
+  const { data: accessSummary = {} } = useQuery({
+    queryKey: ["partner-access-summary"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("partner_product_access" as any)
+        .select("partner_id, family, product_id");
+      const map: Record<string, { familyCount: number; skuCount: number }> = {};
+      (data || []).forEach((r: any) => {
+        if (!map[r.partner_id]) map[r.partner_id] = { familyCount: 0, skuCount: 0 };
+        if (r.family) map[r.partner_id].familyCount++;
+        else map[r.partner_id].skuCount++;
+      });
+      return map;
     },
   });
 
