@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Search, Plus, Pencil, ToggleLeft, ToggleRight, Users, CheckCircle2, AlertCircle, RefreshCw, Loader2 } from "lucide-react";
+import { Search, Plus, Pencil, ToggleLeft, ToggleRight, Users, CheckCircle2, AlertCircle, RefreshCw, Loader2, Mail } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -26,6 +26,9 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
+import {
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+} from "@/components/ui/dialog";
 import { US_STATES } from "@/lib/us-states";
 import type { Tables } from "@/integrations/supabase/types";
 import { formatDistanceToNow } from "date-fns";
@@ -98,6 +101,109 @@ function PartnerForm({
   );
 }
 
+/* ───── Change Email Modal ───── */
+function ChangeEmailModal({
+  partner,
+  open,
+  onClose,
+  onChanged,
+}: {
+  partner: Partner;
+  open: boolean;
+  onClose: () => void;
+  onChanged: () => void;
+}) {
+  const [newEmail, setNewEmail] = useState("");
+  const [confirmEmail, setConfirmEmail] = useState("");
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const emailsMatch = newEmail === confirmEmail;
+  const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail);
+  const canSubmit = isValidEmail && emailsMatch && newEmail !== partner.contact_email;
+
+  const handleSubmit = async () => {
+    if (!canSubmit) return;
+    setSending(true);
+    setError(null);
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke("change-partner-email", {
+        body: { partner_id: partner.id, new_email: newEmail },
+      });
+      if (fnError) throw fnError;
+      if (data?.error) {
+        setError(data.error);
+        return;
+      }
+      toast.success(`Confirmation email sent to ${newEmail}. Email will update once confirmed.`);
+      onChanged();
+      onClose();
+      setNewEmail("");
+      setConfirmEmail("");
+    } catch (err: any) {
+      setError(err.message || "Failed to change email");
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={v => { if (!v) { onClose(); setError(null); } }}>
+      <DialogContent className="max-w-[480px]">
+        <DialogHeader>
+          <DialogTitle>Change login email</DialogTitle>
+          <DialogDescription>
+            This will update the partner's login email across all systems.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4 py-2">
+          <div>
+            <Label className="text-muted-foreground text-sm">Current email</Label>
+            <p className="text-sm font-medium mt-1">{partner.contact_email}</p>
+          </div>
+          <div>
+            <Label>New email</Label>
+            <Input
+              type="email"
+              value={newEmail}
+              onChange={e => setNewEmail(e.target.value)}
+              placeholder="new@example.com"
+            />
+          </div>
+          <div>
+            <Label>Confirm new email</Label>
+            <Input
+              type="email"
+              value={confirmEmail}
+              onChange={e => setConfirmEmail(e.target.value)}
+              placeholder="Confirm new email"
+            />
+            {confirmEmail && !emailsMatch && (
+              <p className="text-xs text-destructive mt-1">Emails do not match</p>
+            )}
+          </div>
+          <div className="bg-amber-50 border border-amber-200 rounded-md p-3 text-sm text-amber-800">
+            The partner will receive a confirmation email at their new address.
+            They must click the link to complete the change.
+            Their current email will continue to work until confirmed.
+          </div>
+          {error && (
+            <div className="text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md p-3">
+              {error}
+            </div>
+          )}
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose} disabled={sending}>Cancel</Button>
+          <Button onClick={handleSubmit} disabled={!canSubmit || sending} className="bg-primary">
+            {sending ? <><Loader2 className="h-4 w-4 mr-1 animate-spin" />Sending...</> : <>Send confirmation email →</>}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 /* ───── ModuSys Sync Button ───── */
 function ModuSysSyncButton({ partner, onSynced }: { partner: Partner; onSynced: (p: Partner) => void }) {
   const [syncing, setSyncing] = useState(false);
@@ -148,6 +254,7 @@ function DistributorDetailSheet({
 }) {
   const [editing, setEditing] = useState(false);
   const [resetLink, setResetLink] = useState<string | null>(null);
+  const [emailModalOpen, setEmailModalOpen] = useState(false);
   const queryClient = useQueryClient();
 
   // Fetch enquiry stats
@@ -244,7 +351,14 @@ function DistributorDetailSheet({
 
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div><p className="text-muted-foreground">Contact</p><p className="font-medium">{partner.contact_name}</p></div>
-              <div><p className="text-muted-foreground">Email</p><p className="font-medium">{partner.contact_email}</p></div>
+              <div><p className="text-muted-foreground">Email</p>
+                <div className="flex items-center gap-1">
+                  <p className="font-medium">{partner.contact_email}</p>
+                  {partner.user_id && (
+                    <button onClick={() => setEmailModalOpen(true)} className="text-xs text-primary hover:underline ml-1">Change</button>
+                  )}
+                </div>
+              </div>
               <div><p className="text-muted-foreground">Phone</p><p className="font-medium">{partner.phone || "—"}</p></div>
               <div><p className="text-muted-foreground">State</p><p className="font-medium">{partner.state || "—"}</p></div>
               <div><p className="text-muted-foreground">EIN</p><p className="font-medium">{partner.ein || "—"}</p></div>
@@ -336,6 +450,21 @@ function DistributorDetailSheet({
               )}
             </div>
           </div>
+        )}
+        {partner && (
+          <ChangeEmailModal
+            partner={partner}
+            open={emailModalOpen}
+            onClose={() => setEmailModalOpen(false)}
+            onChanged={() => {
+              queryClient.invalidateQueries({ queryKey: ["admin-partners"] });
+              const refreshPartner = async () => {
+                const { data: updated } = await supabase.from("partners").select("*").eq("id", partner.id).single();
+                if (updated) onPartnerUpdated?.(updated as Partner);
+              };
+              refreshPartner();
+            }}
+          />
         )}
       </SheetContent>
     </Sheet>

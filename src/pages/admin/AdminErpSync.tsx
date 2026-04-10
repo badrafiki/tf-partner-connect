@@ -15,6 +15,9 @@ import {
 } from "@/components/ui/collapsible";
 import { RefreshCw, Copy, ArrowRight, CheckCircle2, XCircle, Clock, ChevronDown, Loader2, AlertCircle, Users, Package, ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
+import {
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+} from "@/components/ui/dialog";
 import { formatDistanceToNow, format } from "date-fns";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -527,14 +530,19 @@ export default function AdminErpSync() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0">
           <CardTitle className="text-lg">Sync Log</CardTitle>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All</SelectItem>
-              <SelectItem value="success">Success</SelectItem>
-              <SelectItem value="error">Error</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="flex items-center gap-2">
+            {statusFilter === "error" && syncLog && syncLog.filter(e => e.status === "error").length > 0 && (
+              <RetryAllButton entries={syncLog.filter(e => e.status === "error")} onComplete={() => refetchLog()} />
+            )}
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="success">Success</SelectItem>
+                <SelectItem value="error">Error</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="rounded-md border">
@@ -547,6 +555,7 @@ export default function AdminErpSync() {
                   <TableHead>Entity</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Detail</TableHead>
+                  <TableHead className="w-24">Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -584,11 +593,18 @@ export default function AdminErpSync() {
                       <TableCell className="text-sm text-muted-foreground max-w-[200px] truncate">
                         {entry.status === "error" ? entry.error_message || "Unknown error" : entry.payload ? JSON.stringify(entry.payload).slice(0, 60) : "—"}
                       </TableCell>
+                      <TableCell>
+                        {entry.status === "error" ? (
+                          <RetryButton entry={entry} onRetried={() => refetchLog()} />
+                        ) : (
+                          <span className="text-muted-foreground text-xs">—</span>
+                        )}
+                      </TableCell>
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                    <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
                       No sync events recorded yet
                     </TableCell>
                   </TableRow>
@@ -627,6 +643,134 @@ export default function AdminErpSync() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+/* ───── Retry Logic ───── */
+const RETRYABLE_EVENTS = ["customer_created", "customer_updated", "quotation_pushed", "order_created", "stock_sync", "product_sync", "stock_sync_pull"];
+
+async function retryAction(entry: Tables<"erp_sync_log">) {
+  const payload = entry.payload as any;
+  switch (entry.event_type) {
+    case "customer_created":
+    case "customer_updated":
+      return supabase.functions.invoke(
+        entry.event_type === "customer_created" ? "create-modusys-customer" : "update-modusys-customer",
+        { body: { partner_id: entry.entity_id } }
+      );
+    case "quotation_pushed":
+      return supabase.functions.invoke("push-quotation-to-modusys", {
+        body: { quotation_id: entry.entity_id },
+      });
+    case "order_created": {
+      const quotationId = payload?.quotation_id ?? entry.entity_id;
+      return supabase.functions.invoke("create-modusys-order", {
+        body: { quotation_id: quotationId },
+      });
+    }
+    case "stock_sync":
+    case "stock_sync_pull":
+      return supabase.functions.invoke("pull-stock-from-modusys", { method: "POST" });
+    case "product_sync":
+      return supabase.functions.invoke("pull-products-from-modusys", { method: "POST" });
+    default:
+      throw new Error("No retry available for this event type");
+  }
+}
+
+function RetryButton({ entry, onRetried }: { entry: Tables<"erp_sync_log">; onRetried: () => void }) {
+  const [retrying, setRetrying] = useState(false);
+
+  if (!RETRYABLE_EVENTS.includes(entry.event_type)) {
+    return <span className="text-muted-foreground text-xs">—</span>;
+  }
+
+  const handleRetry = async () => {
+    setRetrying(true);
+    try {
+      const { error } = await retryAction(entry);
+      if (error) throw error;
+      toast.success("Retry successful");
+      onRetried();
+    } catch (err: any) {
+      toast.error("Retry failed — check Edge Function logs");
+    } finally {
+      setRetrying(false);
+    }
+  };
+
+  return (
+    <Button variant="outline" size="sm" onClick={handleRetry} disabled={retrying} className="text-xs">
+      {retrying ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <RefreshCw className="h-3 w-3 mr-1" />}
+      {retrying ? "Retrying..." : "Retry"}
+    </Button>
+  );
+}
+
+function RetryAllButton({ entries, onComplete }: { entries: Tables<"erp_sync_log">[]; onComplete: () => void }) {
+  const [open, setOpen] = useState(false);
+  const [retrying, setRetrying] = useState(false);
+  const [progress, setProgress] = useState({ current: 0, total: 0 });
+
+  const retryableEntries = entries.filter(e => RETRYABLE_EVENTS.includes(e.event_type));
+
+  if (retryableEntries.length === 0) return null;
+
+  const handleRetryAll = async () => {
+    setRetrying(true);
+    setProgress({ current: 0, total: retryableEntries.length });
+    let succeeded = 0;
+    let failed = 0;
+
+    for (let i = 0; i < retryableEntries.length; i++) {
+      setProgress({ current: i + 1, total: retryableEntries.length });
+      try {
+        const { error } = await retryAction(retryableEntries[i]);
+        if (error) throw error;
+        succeeded++;
+      } catch {
+        failed++;
+      }
+      if (i < retryableEntries.length - 1) {
+        await new Promise(r => setTimeout(r, 500));
+      }
+    }
+
+    toast.success(`${succeeded} succeeded, ${failed} still failing — check logs`);
+    setRetrying(false);
+    setOpen(false);
+    onComplete();
+  };
+
+  return (
+    <>
+      <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
+        <RefreshCw className="h-3 w-3 mr-1" />
+        Retry all errors
+      </Button>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Retry {retryableEntries.length} failed sync events?</DialogTitle>
+            <DialogDescription>
+              This will re-attempt each failed operation in sequence.
+            </DialogDescription>
+          </DialogHeader>
+          {retrying && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Retrying {progress.current} of {progress.total}...
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setOpen(false)} disabled={retrying}>Cancel</Button>
+            <Button onClick={handleRetryAll} disabled={retrying}>
+              {retrying ? "Retrying..." : "Confirm"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 

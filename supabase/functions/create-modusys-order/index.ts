@@ -160,7 +160,7 @@ Deno.serve(async (req) => {
         entity_id: order?.id,
         status: "error",
         error_message: errorMsg,
-        payload: { partner: partner.company_name },
+        payload: { partner: partner.company_name, quotation_id: quotation.id, error: errorMsg },
       });
 
       return new Response(
