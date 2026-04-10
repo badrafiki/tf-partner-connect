@@ -351,7 +351,14 @@ function DistributorDetailSheet({
 
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div><p className="text-muted-foreground">Contact</p><p className="font-medium">{partner.contact_name}</p></div>
-              <div><p className="text-muted-foreground">Email</p><p className="font-medium">{partner.contact_email}</p></div>
+              <div><p className="text-muted-foreground">Email</p>
+                <div className="flex items-center gap-1">
+                  <p className="font-medium">{partner.contact_email}</p>
+                  {partner.user_id && (
+                    <button onClick={() => setEmailModalOpen(true)} className="text-xs text-primary hover:underline ml-1">Change</button>
+                  )}
+                </div>
+              </div>
               <div><p className="text-muted-foreground">Phone</p><p className="font-medium">{partner.phone || "—"}</p></div>
               <div><p className="text-muted-foreground">State</p><p className="font-medium">{partner.state || "—"}</p></div>
               <div><p className="text-muted-foreground">EIN</p><p className="font-medium">{partner.ein || "—"}</p></div>
