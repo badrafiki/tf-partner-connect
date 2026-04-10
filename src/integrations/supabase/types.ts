@@ -433,6 +433,58 @@ export type Database = {
           },
         ]
       }
+      partner_product_access: {
+        Row: {
+          access: string
+          category: string | null
+          created_at: string | null
+          family: string | null
+          id: string
+          partner_id: string
+          product_id: string | null
+        }
+        Insert: {
+          access: string
+          category?: string | null
+          created_at?: string | null
+          family?: string | null
+          id?: string
+          partner_id: string
+          product_id?: string | null
+        }
+        Update: {
+          access?: string
+          category?: string | null
+          created_at?: string | null
+          family?: string | null
+          id?: string
+          partner_id?: string
+          product_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_product_access_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partner_product_access_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partner_product_access_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products_partner_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       partners: {
         Row: {
           active: boolean
@@ -777,6 +829,18 @@ export type Database = {
       }
     }
     Functions: {
+      get_category_counts_for_partner: {
+        Args: { p_partner_id: string }
+        Returns: {
+          category: string
+          family: string
+          product_count: number
+        }[]
+      }
+      get_partner_visible_products: {
+        Args: { p_partner_id: string }
+        Returns: string[]
+      }
       has_role: { Args: { r: string; uid: string }; Returns: boolean }
     }
     Enums: {
