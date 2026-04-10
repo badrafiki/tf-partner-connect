@@ -330,160 +330,160 @@ function DistributorDetailSheet({
             <TabsTrigger value="details" className="flex-1">Details</TabsTrigger>
             <TabsTrigger value="product-access" className="flex-1">Product Access</TabsTrigger>
           </TabsList>
+
           <TabsContent value="details">
-            {!editing && (
-              <div className="flex justify-end mb-2">
-                <Button size="sm" variant="outline" onClick={() => setEditing(true)}><Pencil className="h-3 w-3 mr-1" />Edit</Button>
-              </div>
-            )}
-
-        {editing ? (
-          <PartnerForm
-            initial={partner}
-            onSave={data => updateMutation.mutate(data)}
-            saving={updateMutation.isPending}
-          />
-        ) : (
-          <div className="space-y-5 py-4">
-            <div className="flex items-center gap-3">
-              <Avatar className="h-12 w-12">
-                <AvatarImage src={partner.company_logo_url || undefined} />
-                <AvatarFallback className="bg-primary/10 text-primary font-semibold">{getInitials(partner.company_name)}</AvatarFallback>
-              </Avatar>
-              <div>
-                <p className="font-semibold text-foreground">{partner.company_name}</p>
-                <Badge variant="secondary">{partner.tier_label}</Badge>
-                <Badge className="ml-1" variant={partner.active ? "default" : "outline"}>
-                  {partner.active ? "Active" : "Inactive"}
-                </Badge>
-              </div>
-            </div>
-
-            <Separator />
-
-            <div className="grid grid-cols-2 gap-3 text-sm">
-              <div><p className="text-muted-foreground">Contact</p><p className="font-medium">{partner.contact_name}</p></div>
-              <div><p className="text-muted-foreground">Email</p>
-                <div className="flex items-center gap-1">
-                  <p className="font-medium">{partner.contact_email}</p>
-                  {partner.user_id && (
-                    <button onClick={() => setEmailModalOpen(true)} className="text-xs text-primary hover:underline ml-1">Change</button>
-                  )}
+            {editing ? (
+              <PartnerForm
+                initial={partner}
+                onSave={data => updateMutation.mutate(data)}
+                saving={updateMutation.isPending}
+              />
+            ) : (
+              <div className="space-y-5 py-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-12 w-12">
+                      <AvatarImage src={partner.company_logo_url || undefined} />
+                      <AvatarFallback className="bg-primary/10 text-primary font-semibold">{getInitials(partner.company_name)}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="font-semibold text-foreground">{partner.company_name}</p>
+                      <Badge variant="secondary">{partner.tier_label}</Badge>
+                      <Badge className="ml-1" variant={partner.active ? "default" : "outline"}>
+                        {partner.active ? "Active" : "Inactive"}
+                      </Badge>
+                    </div>
+                  </div>
+                  <Button size="sm" variant="outline" onClick={() => setEditing(true)}><Pencil className="h-3 w-3 mr-1" />Edit</Button>
                 </div>
-              </div>
-              <div><p className="text-muted-foreground">Phone</p><p className="font-medium">{partner.phone || "—"}</p></div>
-              <div><p className="text-muted-foreground">State</p><p className="font-medium">{partner.state || "—"}</p></div>
-              <div><p className="text-muted-foreground">EIN</p><p className="font-medium">{partner.ein || "—"}</p></div>
-              <div><p className="text-muted-foreground">Rep</p><p className="font-medium">{partner.assigned_rep || "—"}</p></div>
-              <div><p className="text-muted-foreground">Discount</p><p className="font-medium text-green-600">{partner.discount_percentage}%</p></div>
-              <div><p className="text-muted-foreground">Account linked</p><p className="font-medium">{partner.user_id ? "Yes" : "No"}</p></div>
-            </div>
 
-            <Separator />
+                <Separator />
 
-            {/* ModuSys Section */}
-            <div>
-              <p className="text-sm font-semibold mb-2">ModuSys</p>
-              {partner.modusys_customer_id ? (
-                <div className="bg-green-50 border border-green-200 rounded-md p-3 space-y-2">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-green-600" />
-                    <span className="text-sm font-medium text-green-800">Customer synced</span>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div><p className="text-muted-foreground">Contact</p><p className="font-medium">{partner.contact_name}</p></div>
+                  <div><p className="text-muted-foreground">Email</p>
+                    <div className="flex items-center gap-1">
+                      <p className="font-medium">{partner.contact_email}</p>
+                      {partner.user_id && (
+                        <button onClick={() => setEmailModalOpen(true)} className="text-xs text-primary hover:underline ml-1">Change</button>
+                      )}
+                    </div>
                   </div>
-                  <div className="text-xs text-muted-foreground">
-                    <span className="font-mono">{String(partner.modusys_customer_id).slice(0, 12)}…</span>
-                  </div>
-                  {partner.modusys_synced_at && (
-                    <div className="text-xs text-muted-foreground">
-                      Synced {formatDistanceToNow(new Date(partner.modusys_synced_at), { addSuffix: true })}
+                  <div><p className="text-muted-foreground">Phone</p><p className="font-medium">{partner.phone || "—"}</p></div>
+                  <div><p className="text-muted-foreground">State</p><p className="font-medium">{partner.state || "—"}</p></div>
+                  <div><p className="text-muted-foreground">EIN</p><p className="font-medium">{partner.ein || "—"}</p></div>
+                  <div><p className="text-muted-foreground">Rep</p><p className="font-medium">{partner.assigned_rep || "—"}</p></div>
+                  <div><p className="text-muted-foreground">Discount</p><p className="font-medium text-green-600">{partner.discount_percentage}%</p></div>
+                  <div><p className="text-muted-foreground">Account linked</p><p className="font-medium">{partner.user_id ? "Yes" : "No"}</p></div>
+                </div>
+
+                <Separator />
+
+                <div>
+                  <p className="text-sm font-semibold mb-2">ModuSys</p>
+                  {partner.modusys_customer_id ? (
+                    <div className="bg-green-50 border border-green-200 rounded-md p-3 space-y-2">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-green-600" />
+                        <span className="text-sm font-medium text-green-800">Customer synced</span>
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        <span className="font-mono">{String(partner.modusys_customer_id).slice(0, 12)}…</span>
+                      </div>
+                      {partner.modusys_synced_at && (
+                        <div className="text-xs text-muted-foreground">
+                          Synced {formatDistanceToNow(new Date(partner.modusys_synced_at), { addSuffix: true })}
+                        </div>
+                      )}
+                      <ModuSysSyncButton partner={partner} onSynced={(p) => onPartnerUpdated?.(p)} />
+                    </div>
+                  ) : (
+                    <div className="bg-muted rounded-md p-3 space-y-2">
+                      <div className="flex items-center gap-2">
+                        <AlertCircle className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">Not synced to ModuSys</span>
+                      </div>
+                      <ModuSysSyncButton partner={partner} onSynced={(p) => onPartnerUpdated?.(p)} />
                     </div>
                   )}
-                  <ModuSysSyncButton partner={partner} onSynced={(p) => onPartnerUpdated?.(p)} />
                 </div>
-              ) : (
-                <div className="bg-muted rounded-md p-3 space-y-2">
-                  <div className="flex items-center gap-2">
-                    <AlertCircle className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">Not synced to ModuSys</span>
+
+                <Separator />
+
+                <div>
+                  <p className="text-sm font-semibold mb-2">Enquiry Stats</p>
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div className="bg-muted rounded-md p-3">
+                      <p className="text-muted-foreground">Total Enquiries</p>
+                      <p className="text-lg font-bold">{enquiries?.length ?? 0}</p>
+                    </div>
+                    <div className="bg-muted rounded-md p-3">
+                      <p className="text-muted-foreground">Total Value</p>
+                      <p className="text-lg font-bold">{formatUSD(totalValue)}</p>
+                    </div>
                   </div>
-                  <ModuSysSyncButton partner={partner} onSynced={(p) => onPartnerUpdated?.(p)} />
                 </div>
-              )}
-            </div>
 
-            <Separator />
+                {recentEnquiries.length > 0 && (
+                  <div>
+                    <p className="text-sm font-semibold mb-2">Recent Enquiries</p>
+                    <div className="space-y-2">
+                      {recentEnquiries.map(e => (
+                        <div key={e.id} className="flex items-center justify-between bg-muted rounded-md p-3 text-sm">
+                          <div>
+                            <p className="font-medium">{new Date(e.submitted_at!).toLocaleDateString()}</p>
+                            <p className="text-muted-foreground">{(e.line_items as any[]).length} items</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-medium">{formatUSD(Number(e.total_partner_usd) || 0)}</p>
+                            <Badge variant="secondary" className="text-xs">{e.status}</Badge>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
-            <div>
-              <p className="text-sm font-semibold mb-2">Enquiry Stats</p>
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div className="bg-muted rounded-md p-3">
-                  <p className="text-muted-foreground">Total Enquiries</p>
-                  <p className="text-lg font-bold">{enquiries?.length ?? 0}</p>
-                </div>
-                <div className="bg-muted rounded-md p-3">
-                  <p className="text-muted-foreground">Total Value</p>
-                  <p className="text-lg font-bold">{formatUSD(totalValue)}</p>
-                </div>
-              </div>
-            </div>
+                <Separator />
 
-            {recentEnquiries.length > 0 && (
-              <div>
-                <p className="text-sm font-semibold mb-2">Recent Enquiries</p>
                 <div className="space-y-2">
-                  {recentEnquiries.map(e => (
-                    <div key={e.id} className="flex items-center justify-between bg-muted rounded-md p-3 text-sm">
-                      <div>
-                        <p className="font-medium">{new Date(e.submitted_at!).toLocaleDateString()}</p>
-                        <p className="text-muted-foreground">{(e.line_items as any[]).length} items</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-medium">{formatUSD(Number(e.total_partner_usd) || 0)}</p>
-                        <Badge variant="secondary" className="text-xs">{e.status}</Badge>
-                      </div>
-                    </div>
-                  ))}
+                  {partner.user_id && (
+                    <Button variant="outline" className="w-full" onClick={handleResetPassword}>
+                      Reset Password
+                    </Button>
+                  )}
+                  {!partner.user_id && (
+                    <Button variant="outline" className="w-full" onClick={handleResendInvite}>
+                      Resend Invite
+                    </Button>
+                  )}
                 </div>
               </div>
             )}
+          </TabsContent>
 
-            <Separator />
+          <TabsContent value="product-access">
+            <ProductAccessTab partner={partner} />
+          </TabsContent>
+        </Tabs>
 
-            <div className="space-y-2">
-              {partner.user_id && (
-                <Button variant="outline" className="w-full" onClick={handleResetPassword}>
-                  Reset Password
-                </Button>
-              )}
-              {!partner.user_id && (
-                <Button variant="outline" className="w-full" onClick={handleResendInvite}>
-                  Resend Invite
-                </Button>
-              )}
-            </div>
-          </div>
-        )}
-        {partner && (
-          <ChangeEmailModal
-            partner={partner}
-            open={emailModalOpen}
-            onClose={() => setEmailModalOpen(false)}
-            onChanged={() => {
-              queryClient.invalidateQueries({ queryKey: ["admin-partners"] });
-              const refreshPartner = async () => {
-                const { data: updated } = await supabase.from("partners").select("*").eq("id", partner.id).single();
-                if (updated) onPartnerUpdated?.(updated as Partner);
-              };
-              refreshPartner();
-            }}
-          />
-        )}
+        <ChangeEmailModal
+          partner={partner}
+          open={emailModalOpen}
+          onClose={() => setEmailModalOpen(false)}
+          onChanged={() => {
+            queryClient.invalidateQueries({ queryKey: ["admin-partners"] });
+            const refreshPartner = async () => {
+              const { data: updated } = await supabase.from("partners").select("*").eq("id", partner.id).single();
+              if (updated) onPartnerUpdated?.(updated as Partner);
+            };
+            refreshPartner();
+          }}
+        />
       </SheetContent>
     </Sheet>
   );
 }
-
-/* ───── Add Sheet ───── */
 function AddDistributorSheet({
   open,
   onClose,
