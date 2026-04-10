@@ -527,14 +527,19 @@ export default function AdminErpSync() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0">
           <CardTitle className="text-lg">Sync Log</CardTitle>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All</SelectItem>
-              <SelectItem value="success">Success</SelectItem>
-              <SelectItem value="error">Error</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="flex items-center gap-2">
+            {statusFilter === "error" && syncLog && syncLog.filter(e => e.status === "error").length > 0 && (
+              <RetryAllButton entries={syncLog.filter(e => e.status === "error")} onComplete={() => refetchLog()} />
+            )}
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="success">Success</SelectItem>
+                <SelectItem value="error">Error</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="rounded-md border">
@@ -547,6 +552,7 @@ export default function AdminErpSync() {
                   <TableHead>Entity</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Detail</TableHead>
+                  <TableHead className="w-24">Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -584,11 +590,18 @@ export default function AdminErpSync() {
                       <TableCell className="text-sm text-muted-foreground max-w-[200px] truncate">
                         {entry.status === "error" ? entry.error_message || "Unknown error" : entry.payload ? JSON.stringify(entry.payload).slice(0, 60) : "—"}
                       </TableCell>
+                      <TableCell>
+                        {entry.status === "error" ? (
+                          <RetryButton entry={entry} onRetried={() => refetchLog()} />
+                        ) : (
+                          <span className="text-muted-foreground text-xs">—</span>
+                        )}
+                      </TableCell>
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                    <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
                       No sync events recorded yet
                     </TableCell>
                   </TableRow>
