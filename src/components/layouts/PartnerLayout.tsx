@@ -129,7 +129,7 @@ export function PartnerLayout() {
                     <span className="flex items-center gap-1 relative">
                       {link.label}
                       {itemCount > 0 && (
-                        <span className="absolute -top-2 -right-4 bg-accent text-accent-foreground text-[10px] font-bold rounded-full h-[18px] w-[18px] flex items-center justify-center">
+                        <span className="absolute -top-2 -right-4 bg-accent text-accent-foreground text-[10px] font-bold rounded-full h-[18px] w-[18px] flex items-center justify-center" aria-label={`Basket — ${itemCount} items`}>
                           {itemCount}
                         </span>
                       )}
