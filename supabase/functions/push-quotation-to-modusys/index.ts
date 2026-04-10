@@ -100,9 +100,16 @@ Deno.serve(async (req) => {
     }
 
     // Build payload
+    // Generate a quote number: QT-YYYYMMDD-XXXX
+    const now = new Date();
+    const datePart = now.toISOString().slice(0, 10).replace(/-/g, "");
+    const randPart = Math.random().toString(36).substring(2, 6).toUpperCase();
+    const quoteNumber = `QT-${datePart}-${randPart}`;
+
     const payload = {
       modusys_customer_id: partner.modusys_customer_id,
       portal_quotation_id: quotation.id,
+      quote_number: quoteNumber,
       expires_at: quotation.expires_at,
       discount_percent: partner.discount_percentage,
       notes: quotation.notes || "",
