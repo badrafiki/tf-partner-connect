@@ -792,5 +792,6 @@ export default function ApplicationPage() {
         <Link to="/cookies" className="hover:text-foreground underline">Cookie Policy</Link>
       </footer>
     </div>
+    </>
   );
 }
