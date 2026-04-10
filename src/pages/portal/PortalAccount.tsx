@@ -101,6 +101,9 @@ export default function PortalAccount() {
   const tier = tierLabel || "Bronze";
   const tc = tierColors[tier] || tierColors.Bronze;
 
+  const labelClass = "text-[12px] text-[#6B7280] uppercase tracking-[0.05em] mb-1";
+  const valueClass = "text-[15px] text-[#2D2D2D] font-medium";
+
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-foreground">My Account</h1>
@@ -111,14 +114,14 @@ export default function PortalAccount() {
           {/* Company Profile */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><Building2 className="h-5 w-5" /> Company Details</CardTitle>
+              <CardTitle className="flex items-center gap-2 text-primary"><Building2 className="h-5 w-5 text-primary" /> Company Details</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex items-center gap-4">
                 {partner?.company_logo_url ? (
                   <img src={partner.company_logo_url} alt="" className="h-20 w-20 rounded-full object-cover" />
                 ) : (
-                  <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center text-primary text-2xl font-bold">
+                  <div className="h-20 w-20 rounded-full bg-tf-navy-light flex items-center justify-center text-primary text-2xl font-semibold">
                     {(companyName || "?").slice(0, 2).toUpperCase()}
                   </div>
                 )}
@@ -139,7 +142,7 @@ export default function PortalAccount() {
           {/* Contact Details */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="flex items-center gap-2"><User className="h-5 w-5" /> Your Contact Details</CardTitle>
+              <CardTitle className="flex items-center gap-2 text-primary"><User className="h-5 w-5 text-primary" /> Your Contact Details</CardTitle>
               {!editing && (
                 <Button variant="ghost" size="sm" onClick={startEdit}><Pencil className="h-4 w-4 mr-1" /> Edit</Button>
               )}
@@ -177,7 +180,7 @@ export default function PortalAccount() {
           {/* Compliance Documents */}
           <Card>
             <CardHeader>
-              <CardTitle>Documents on File</CardTitle>
+              <CardTitle className="text-primary">Documents on File</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="bg-blue-50 text-blue-800 text-sm p-3 rounded">
@@ -208,10 +211,15 @@ export default function PortalAccount() {
           {/* Password & Security */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><Shield className="h-5 w-5" /> Password & Security</CardTitle>
+              <CardTitle className="flex items-center gap-2 text-primary"><Shield className="h-5 w-5 text-primary" /> Password & Security</CardTitle>
             </CardHeader>
             <CardContent>
-              <Button variant="outline" onClick={handlePasswordReset}>Change password</Button>
+              <button
+                onClick={handlePasswordReset}
+                className="border border-primary text-primary bg-white px-4 py-2 rounded-[6px] text-sm font-medium hover:bg-tf-navy-light transition-colors"
+              >
+                Change password
+              </button>
             </CardContent>
           </Card>
         </div>
@@ -220,40 +228,40 @@ export default function PortalAccount() {
         <div>
           <Card>
             <CardHeader>
-              <CardTitle>Your Account</CardTitle>
+              <CardTitle className="text-primary">Your Account</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <p className="text-xs text-muted-foreground mb-1">Tier</p>
-                <span className="inline-block px-3 py-1 rounded-full text-sm font-semibold" style={{ backgroundColor: tc.bg, color: tc.text }}>
+                <p className={labelClass}>Tier</p>
+                <span className="inline-block px-3 py-1 rounded-full text-sm font-medium" style={{ backgroundColor: tc.bg, color: tc.text }}>
                   {tier} Partner
                 </span>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground mb-1">Discount</p>
-                <p className="font-semibold">{discountPercentage}% off all list prices</p>
+                <p className={labelClass}>Discount</p>
+                <p className={valueClass}>{discountPercentage}% off all list prices</p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground mb-1">Assigned Rep</p>
+                <p className={labelClass}>Assigned Rep</p>
                 {assignedRep ? (
                   <div>
-                    <p className="font-medium">{assignedRep}</p>
-                    <a href="mailto:partners@total-filtration.com" className="text-sm hover:underline" style={{ color: "#1B3A6B" }}>partners@total-filtration.com</a>
+                    <p className={valueClass}>{assignedRep}</p>
+                    <a href="mailto:partners@total-filtration.com" className="text-sm text-primary hover:underline">partners@total-filtration.com</a>
                   </div>
                 ) : (
-                  <p className="text-sm">Contact <a href="mailto:partners@total-filtration.com" className="underline" style={{ color: "#1B3A6B" }}>partners@total-filtration.com</a></p>
+                  <p className="text-sm">Contact <a href="mailto:partners@total-filtration.com" className="underline text-primary">partners@total-filtration.com</a></p>
                 )}
               </div>
               <div>
-                <p className="text-xs text-muted-foreground mb-1">Member since</p>
-                <p className="text-sm">
+                <p className={labelClass}>Member since</p>
+                <p className={valueClass}>
                   {partner?.created_at
                     ? new Date(partner.created_at).toLocaleDateString("en-US", { month: "long", year: "numeric" })
                     : "—"}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground mb-1">Status</p>
+                <p className={labelClass}>Status</p>
                 <Badge className="bg-green-100 text-green-800">Active</Badge>
               </div>
             </CardContent>
