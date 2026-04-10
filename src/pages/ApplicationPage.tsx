@@ -2,8 +2,10 @@ import { useState, useEffect, useRef } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import tfLogoImport from "@/assets/tf-usa-logo.svg";
 import { CheckCircle, Loader2, Info } from "lucide-react";
+import { SITE_URL } from "@/constants";
 
 import { supabase } from "@/integrations/supabase/client";
 import { applicationSchema, type ApplicationFormValues } from "@/lib/application-schema";
@@ -244,6 +246,21 @@ export default function ApplicationPage() {
   }
 
   return (
+    <>
+      <Helmet>
+        <title>Apply to Become a TF USA Distribution Partner</title>
+        <meta name="description" content="Apply to join the TF USA partner network. Access exclusive distributor pricing on industrial air and coolant filtration systems across the US and Canada." />
+        <meta property="og:title" content="Apply to Become a TF USA Distribution Partner" />
+        <meta property="og:description" content="Apply to join the TF USA partner network. Exclusive distributor pricing on industrial filtration systems." />
+        <meta property="og:url" content={`${SITE_URL}/apply`} />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="TF USA Partner Portal" />
+        <meta property="og:image" content={`${SITE_URL}/og-image.png`} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Apply to Become a TF USA Distribution Partner" />
+        <meta name="twitter:description" content="Apply to join the TF USA partner network. Exclusive distributor pricing on industrial filtration systems." />
+        <meta name="twitter:image" content={`${SITE_URL}/og-image.png`} />
+      </Helmet>
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="bg-primary sticky top-0 z-50">
@@ -770,8 +787,11 @@ export default function ApplicationPage() {
         <span className="mx-1">|</span>{" "}
         <Link to="/privacy" className="hover:text-foreground underline">Privacy Policy</Link>{" "}
         <span className="mx-1">|</span>{" "}
-        <Link to="/terms" className="hover:text-foreground underline">Terms &amp; Conditions</Link>
+        <Link to="/terms" className="hover:text-foreground underline">Terms &amp; Conditions</Link>{" "}
+        <span className="mx-1">|</span>{" "}
+        <Link to="/cookies" className="hover:text-foreground underline">Cookie Policy</Link>
       </footer>
     </div>
+    </>
   );
 }

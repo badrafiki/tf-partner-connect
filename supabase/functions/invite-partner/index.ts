@@ -29,7 +29,7 @@ Deno.serve(async (req) => {
 
     // Try to invite the user
     const { data: inviteData, error: inviteError } = await supabase.auth.admin.inviteUserByEmail(email, {
-      redirectTo: `${supabaseUrl.replace('.supabase.co', '.supabase.co')}/auth/v1/verify?redirect_to=${encodeURIComponent('https://id-preview--de8eed7c-e434-4589-aca0-5dfb303b4ff1.lovable.app/reset-password')}`,
+      redirectTo: `${supabaseUrl.replace('.supabase.co', '.supabase.co')}/auth/v1/verify?redirect_to=${encodeURIComponent('https://partners.total-filtration.com/reset-password')}`,
     });
 
     if (inviteError) {
@@ -55,7 +55,7 @@ Deno.serve(async (req) => {
           type: "recovery",
           email,
           options: {
-            redirectTo: "https://id-preview--de8eed7c-e434-4589-aca0-5dfb303b4ff1.lovable.app/reset-password",
+            redirectTo: "https://partners.total-filtration.com/reset-password",
           },
         });
 

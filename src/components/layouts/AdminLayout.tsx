@@ -113,7 +113,7 @@ export function AdminLayout() {
         <header className="md:hidden flex items-center h-14 px-4 border-b border-border bg-card">
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" aria-label="Open navigation menu">
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
