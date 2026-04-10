@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import { wrapEmail, h1, keyValue, ctaButton, dataTable } from "../_shared/email-wrapper.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -46,39 +47,45 @@ Deno.serve(async (req) => {
       });
     }
 
-    const htmlBody = `
-      <h2>New Partner Application</h2>
-      <table style="border-collapse:collapse; font-family:Arial,sans-serif;">
-        <tr><td style="padding:4px 12px 4px 0; font-weight:bold;">Company:</td><td>${app.legal_business_name}</td></tr>
-        <tr><td style="padding:4px 12px 4px 0; font-weight:bold;">Contact:</td><td>${app.contact_first_name} ${app.contact_last_name}</td></tr>
-        <tr><td style="padding:4px 12px 4px 0; font-weight:bold;">Email:</td><td>${app.contact_email}</td></tr>
-        <tr><td style="padding:4px 12px 4px 0; font-weight:bold;">Phone:</td><td>${app.primary_phone || "N/A"}</td></tr>
-        <tr><td style="padding:4px 12px 4px 0; font-weight:bold;">State:</td><td>${app.primary_address_state || app.reg_address_state || "N/A"}</td></tr>
-        <tr><td style="padding:4px 12px 4px 0; font-weight:bold;">Annual Volume:</td><td>${app.annual_volume_estimate || "N/A"}</td></tr>
-        <tr><td style="padding:4px 12px 4px 0; font-weight:bold;">Submitted:</td><td>${app.submitted_at}</td></tr>
-      </table>
-      <br/>
-      <p><a href="https://partners.total-filtration.com/admin/applications">Review application →</a></p>
+    const body = `
+      ${h1("New Partner Application")}
+      ${keyValue("Company", app.legal_business_name)}
+      ${keyValue("Contact", `${app.contact_first_name} ${app.contact_last_name}`)}
+      ${keyValue("Email", app.contact_email)}
+      ${keyValue("Phone", app.primary_phone || "N/A")}
+      ${keyValue("State", app.primary_address_state || app.reg_address_state || "N/A")}
+      ${keyValue("Annual Volume", app.annual_volume_estimate || "N/A")}
+      ${keyValue("Submitted", new Date(app.submitted_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" }))}
+      ${ctaButton("Review Application →", "https://partners.total-filtration.com/admin/applications")}
     `;
 
-    const emailRes = await fetch("https://api.resend.com/emails", {
+    const GATEWAY_URL = "https://connector-gateway.lovable.dev/resend";
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    let url: string;
+    if (LOVABLE_API_KEY) {
+      headers["Authorization"] = `Bearer ${LOVABLE_API_KEY}`;
+      headers["X-Connection-Api-Key"] = RESEND_API_KEY;
+      url = `${GATEWAY_URL}/emails`;
+    } else {
+      headers["Authorization"] = `Bearer ${RESEND_API_KEY}`;
+      url = "https://api.resend.com/emails";
+    }
+
+    const emailRes = await fetch(url, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-      },
+      headers,
       body: JSON.stringify({
         from: "TF USA Portal <notifications@total-filtration.com>",
         to: ["partners@total-filtration.com"],
         subject: `New Partner Application — ${app.legal_business_name}`,
-        html: htmlBody,
+        html: wrapEmail(body),
       }),
     });
 
     const emailData = await emailRes.json();
-    if (!emailRes.ok) {
-      console.error("Resend error:", emailData);
-    }
+    if (!emailRes.ok) console.error("Resend error:", emailData);
 
     return new Response(JSON.stringify({ success: true, email_sent: emailRes.ok }), {
       status: 200,
