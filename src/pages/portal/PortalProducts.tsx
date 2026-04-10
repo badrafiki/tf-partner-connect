@@ -34,7 +34,7 @@ export default function PortalProducts() {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [selectedFamily, setSelectedFamily] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [inStockOnly, setInStockOnly] = useState(false);
+  const [favouritesOnly, setFavouritesOnly] = useState(false);
   const [sort, setSort] = useState<SortKey>("name-asc");
   const [addingCard, setAddingCard] = useState<string | null>(null);
   const [quantities, setQuantities] = useState<Record<string, number>>({});
@@ -80,7 +80,7 @@ export default function PortalProducts() {
   const {
     data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading,
   } = useInfiniteQuery({
-    queryKey: ["products-grid", debouncedSearch, selectedFamily, selectedCategory, inStockOnly, sort],
+    queryKey: ["products-grid", debouncedSearch, selectedFamily, selectedCategory, favouritesOnly, sort, favouriteIds],
     queryFn: async ({ pageParam = 0 }) => {
       let query = supabase
         .from("products_partner_view")
@@ -89,7 +89,7 @@ export default function PortalProducts() {
       if (selectedFamily) query = query.eq("family", selectedFamily);
       if (selectedCategory) query = query.eq("category", selectedCategory);
       if (debouncedSearch) query = query.or(`name.ilike.%${debouncedSearch}%,sku.ilike.%${debouncedSearch}%`);
-      if (inStockOnly) query = query.gt("stock_qty", 0);
+      if (favouritesOnly && favouriteIds.length > 0) query = query.in("id", favouriteIds);
 
       query = query
         .order(sortCol, { ascending: sortAsc })
@@ -241,8 +241,8 @@ export default function PortalProducts() {
           ))}
           <div className="ml-auto flex items-center gap-3">
             <label className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Switch checked={inStockOnly} onCheckedChange={setInStockOnly} />
-              In stock
+              <Switch checked={favouritesOnly} onCheckedChange={setFavouritesOnly} />
+              Favourites
             </label>
             <Select value={sort} onValueChange={(v) => setSort(v as SortKey)}>
               <SelectTrigger className="w-[170px] h-9 text-sm bg-background">
