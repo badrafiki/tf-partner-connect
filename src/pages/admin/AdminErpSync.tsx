@@ -15,6 +15,9 @@ import {
 } from "@/components/ui/collapsible";
 import { RefreshCw, Copy, ArrowRight, CheckCircle2, XCircle, Clock, ChevronDown, Loader2, AlertCircle, Users, Package, ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
+import {
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+} from "@/components/ui/dialog";
 import { formatDistanceToNow, format } from "date-fns";
 import type { Tables } from "@/integrations/supabase/types";
 
