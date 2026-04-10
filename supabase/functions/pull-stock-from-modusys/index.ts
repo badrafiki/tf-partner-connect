@@ -1,4 +1,4 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,7 +12,6 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Step 1: Verify caller is authenticated admin
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -21,13 +20,14 @@ Deno.serve(async (req) => {
       });
     }
 
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_ANON_KEY")!,
-      { global: { headers: { Authorization: authHeader } } }
-    );
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    const userClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
+      global: { headers: { Authorization: authHeader } },
+    });
+
+    const { data: { user }, error: userError } = await userClient.auth.getUser();
     if (userError || !user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
@@ -35,27 +35,21 @@ Deno.serve(async (req) => {
       });
     }
 
-    const userId = user.id;
+    const adminClient = createClient(supabaseUrl, serviceKey);
 
-    // Check admin role
-    const adminClient = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-    );
-
-    const { data: roleCheck } = await adminClient.rpc("has_role", {
-      uid: userId,
+    const { data: isAdmin } = await adminClient.rpc("has_role", {
+      uid: user.id,
       r: "admin",
     });
 
-    if (!roleCheck) {
+    if (!isAdmin) {
       return new Response(JSON.stringify({ error: "Forbidden" }), {
         status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Step 2: Call ModuSys edge function to get stock data
+    // Call ModuSys push-all-stock function
     const modusysUrl = Deno.env.get("MODUSYS_SUPABASE_URL");
     const integrationSecret = Deno.env.get("INTEGRATION_SECRET");
 
@@ -64,25 +58,39 @@ Deno.serve(async (req) => {
     }
 
     const stockResponse = await fetch(
-      `${modusysUrl}/functions/v1/get-stock-levels`,
+      `${modusysUrl}/functions/v1/push-all-stock`,
       {
-        method: "GET",
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
           "x-integration-secret": integrationSecret,
         },
+        body: JSON.stringify({}),
       }
     );
 
     if (!stockResponse.ok) {
       const errText = await stockResponse.text();
-      throw new Error(`ModuSys returned ${stockResponse.status}: ${errText}`);
+      const errorMsg = `ModuSys returned ${stockResponse.status}: ${errText.slice(0, 200)}`;
+
+      await adminClient.from("erp_sync_log").insert({
+        event_type: "stock_sync_pull",
+        direction: "modusys_to_portal",
+        entity_type: "product",
+        status: "error",
+        error_message: errorMsg,
+      });
+
+      return new Response(
+        JSON.stringify({ error: errorMsg }),
+        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
-    const stockData = await stockResponse.json();
-    const items: Array<{ sku: string; total_quantity: number }> = stockData.items || [];
+    const result = await stockResponse.json();
+    const items: Array<{ sku: string; total_quantity: number }> = result.items || [];
 
-    // Step 3: Update portal products by SKU match
+    // Update portal products by SKU match
     let updated = 0;
     for (const item of items) {
       const { sku, total_quantity } = item;
@@ -98,7 +106,6 @@ Deno.serve(async (req) => {
       if (data) updated++;
     }
 
-    // Step 4: Log to erp_sync_log
     await adminClient.from("erp_sync_log").insert({
       event_type: "stock_sync_pull",
       direction: "modusys_to_portal",
@@ -107,13 +114,9 @@ Deno.serve(async (req) => {
       payload: { items_received: items.length, updated },
     });
 
-    // Step 5: Return result
     return new Response(
       JSON.stringify({ updated, timestamp: new Date().toISOString() }),
-      {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {
     console.error("pull-stock-from-modusys error:", err);
@@ -128,16 +131,13 @@ Deno.serve(async (req) => {
         direction: "modusys_to_portal",
         entity_type: "product",
         status: "error",
-        error_message: err.message,
+        error_message: err instanceof Error ? err.message : "Unknown error",
       });
     } catch (_) { /* best effort */ }
 
     return new Response(
-      JSON.stringify({ error: err.message }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+      JSON.stringify({ error: err instanceof Error ? err.message : "Unknown error" }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 });
