@@ -4,7 +4,7 @@ import { LegalLayout } from "@/components/layouts/LegalLayout";
 const sections = [
   {
     title: "1. Who We Are",
-    content: `Total Filtration USA LLC ("TF USA", "we", "us") operates the TF USA Partner Portal at partners.total-filtration.com. We are a distributor of industrial filtration and air quality systems based in Winter Garden, Florida.`,
+    content: `Total Filtration USA LLC ("TF USA", "we", "us") operates the TF USA Partner Portal at partners.total-filtration.com. We are a distributor of industrial filtration and air quality systems based in Winter Garden, Florida. This policy applies to all US and Canadian distributors and applicants who use the Partner Portal or submit a distributor application.`,
   },
   {
     title: "2. What Information We Collect",
@@ -62,6 +62,8 @@ We do not sell, rent or share your personal information with any third parties f
 • Request correction of inaccurate information
 • Request deletion of your information (subject to legal retention requirements)
 • Withdraw consent where processing is based on consent
+
+Canadian applicants and partners may also have rights under Canada's Personal Information Protection and Electronic Documents Act (PIPEDA), including the right to access, correct, and challenge compliance with these principles. For more information on your rights under PIPEDA, visit the Office of the Privacy Commissioner of Canada at priv.gc.ca.
 
 To exercise any of these rights, contact us at partners@total-filtration.com.`,
   },
