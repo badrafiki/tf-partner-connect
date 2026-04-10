@@ -187,64 +187,39 @@ Deno.serve(async (req) => {
       const formatUSD = (n: number) =>
         new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(n);
 
-      const lineItemsHtml = enrichedItems
-        .map(
-          (i: any) =>
-            `<tr>
-              <td style="padding:6px 8px;border:1px solid #ddd;font-family:monospace;font-size:12px">${i.sku}</td>
-              <td style="padding:6px 8px;border:1px solid #ddd">${i.name}</td>
-              <td style="padding:6px 8px;border:1px solid #ddd;text-align:center">${i.quantity}</td>
-              <td style="padding:6px 8px;border:1px solid #ddd;text-align:right">${formatUSD(i.list_price_usd)}</td>
-              <td style="padding:6px 8px;border:1px solid #ddd;text-align:right">${formatUSD(i.partner_price_usd)}</td>
-              <td style="padding:6px 8px;border:1px solid #ddd;text-align:right">${formatUSD(i.line_total_partner)}</td>
-            </tr>`
-        )
-        .join("");
-
-      const tableHtml = `
-        <table style="border-collapse:collapse;width:100%;font-size:13px;margin:16px 0">
-          <thead>
-            <tr style="background:#f4f4f4">
-              <th style="padding:8px;border:1px solid #ddd;text-align:left">SKU</th>
-              <th style="padding:8px;border:1px solid #ddd;text-align:left">Product</th>
-              <th style="padding:8px;border:1px solid #ddd;text-align:center">Qty</th>
-              <th style="padding:8px;border:1px solid #ddd;text-align:right">List</th>
-              <th style="padding:8px;border:1px solid #ddd;text-align:right">Partner</th>
-              <th style="padding:8px;border:1px solid #ddd;text-align:right">Line Total</th>
-            </tr>
-          </thead>
-          <tbody>${lineItemsHtml}</tbody>
-        </table>`;
-
       const ref = enquiry.id.slice(0, 8);
-      const poLine = po_reference ? `<p><strong>PO Reference:</strong> ${po_reference}</p>` : "";
+      const poLine = po_reference ? keyValue("PO Reference", po_reference) : "";
+
+      const tableRows = enrichedItems.map((i: any) => [
+        i.sku, i.name, String(i.quantity), formatUSD(i.list_price_usd), formatUSD(i.partner_price_usd), formatUSD(i.line_total_partner),
+      ]);
+
+      const itemTable = dataTable(["SKU", "Product", "Qty", "List", "Partner", "Line Total"], tableRows);
 
       // Admin notification email
-      const adminHtml = `
-        <div style="font-family:Arial,sans-serif;color:#333;max-width:600px">
-          <h2 style="color:#1B3A6B">New Enquiry — ${partner.company_name}</h2>
-          <p><strong>Reference:</strong> ${ref}</p>
-          <p><strong>Partner:</strong> ${partner.company_name} (${partner.contact_name})</p>
-          <p><strong>Discount:</strong> ${partner.discount_percentage}%</p>
-          ${poLine}
-          ${tableHtml}
-          <p><strong>List Total:</strong> ${formatUSD(total_list_usd)}</p>
-          <p><strong>Partner Total:</strong> ${formatUSD(total_partner_usd)}</p>
-          <p style="margin-top:20px"><a href="https://id-preview--de8eed7c-e434-4589-aca0-5dfb303b4ff1.lovable.app/admin/enquiries" style="color:#1B3A6B">View in admin portal →</a></p>
-        </div>`;
+      const adminBody = `
+        ${h1(`New Enquiry — ${partner.company_name}`)}
+        ${keyValue("Reference", ref)}
+        ${keyValue("Partner", `${partner.company_name} (${partner.contact_name})`)}
+        ${keyValue("Discount", `${partner.discount_percentage}%`)}
+        ${poLine}
+        ${itemTable}
+        ${keyValue("List Total", formatUSD(total_list_usd))}
+        ${keyValue("Partner Total", formatUSD(total_partner_usd))}
+        ${ctaButton("View in Admin Portal →", "https://partners.total-filtration.com/admin/enquiries")}
+      `;
 
       // Partner confirmation email
-      const partnerHtml = `
-        <div style="font-family:Arial,sans-serif;color:#333;max-width:600px">
-          <h2 style="color:#1B3A6B">Enquiry Received</h2>
-          <p>Dear ${partner.contact_name},</p>
-          <p>We've received your enquiry and will respond with a formal quotation within 1–2 business days.</p>
-          <p><strong>Enquiry reference:</strong> ${ref}</p>
-          ${poLine}
-          ${tableHtml}
-          <p><strong>Your total:</strong> ${formatUSD(total_partner_usd)}</p>
-          <p style="margin-top:20px;color:#666">The TF USA Team</p>
-        </div>`;
+      const partnerBody = `
+        ${h1("Enquiry Received")}
+        <p style="font-size:15px;color:#2D2D2D;line-height:1.6;margin:0 0 16px;">Dear ${partner.contact_name},</p>
+        <p style="font-size:15px;color:#2D2D2D;line-height:1.6;margin:0 0 16px;">We've received your enquiry and will respond with a formal quotation within 1–2 business days.</p>
+        ${keyValue("Enquiry reference", ref)}
+        ${poLine}
+        ${itemTable}
+        ${keyValue("Your total", formatUSD(total_partner_usd))}
+        ${signoff()}
+      `;
 
       const GATEWAY_URL = "https://connector-gateway.lovable.dev/resend";
       const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
@@ -254,54 +229,41 @@ Deno.serve(async (req) => {
           const headers: Record<string, string> = {
             "Content-Type": "application/json",
           };
-          
+          let url: string;
           if (LOVABLE_API_KEY) {
-            // Use connector gateway
             headers["Authorization"] = `Bearer ${LOVABLE_API_KEY}`;
             headers["X-Connection-Api-Key"] = resendApiKey;
-            
-            await fetch(`${GATEWAY_URL}/emails`, {
-              method: "POST",
-              headers,
-              body: JSON.stringify({
-                from: "TF USA Partner Portal <noreply@total-filtration.com>",
-                to: [to],
-                subject,
-                html,
-              }),
-            });
+            url = `${GATEWAY_URL}/emails`;
           } else {
-            // Direct Resend API
-            await fetch("https://api.resend.com/emails", {
-              method: "POST",
-              headers: {
-                ...headers,
-                Authorization: `Bearer ${resendApiKey}`,
-              },
-              body: JSON.stringify({
-                from: "TF USA Partner Portal <noreply@total-filtration.com>",
-                to: [to],
-                subject,
-                html,
-              }),
-            });
+            headers["Authorization"] = `Bearer ${resendApiKey}`;
+            url = "https://api.resend.com/emails";
           }
+          await fetch(url, {
+            method: "POST",
+            headers,
+            body: JSON.stringify({
+              from: "TF USA Partner Portal <noreply@total-filtration.com>",
+              to: [to],
+              subject,
+              html,
+            }),
+          });
         } catch (e) {
           console.error("Email send error:", e);
         }
       };
 
-      // Send both emails (don't block the response)
+      // Send both emails
       await Promise.allSettled([
         sendEmail(
           "partners@total-filtration.com",
           `New Enquiry — ${partner.company_name} — ${ref}`,
-          adminHtml
+          wrapEmail(adminBody)
         ),
         sendEmail(
           partner.contact_email,
           `TF USA — Enquiry Received (${ref})`,
-          partnerHtml
+          wrapEmail(partnerBody)
         ),
       ]);
     }
