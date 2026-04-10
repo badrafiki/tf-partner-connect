@@ -43,12 +43,7 @@ Deno.serve(async (req) => {
 
       const userId = claims.claims.sub as string;
 
-      const adminClient = createClient(
-        Deno.env.get("SUPABASE_URL")!,
-        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-      );
-
-      const { data: isAdmin } = await adminClient.rpc("has_role", {
+      const { data: isAdmin } = await supabase.rpc("has_role", {
         uid: userId,
         r: "admin",
       });
