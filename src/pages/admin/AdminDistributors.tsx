@@ -262,6 +262,11 @@ function DistributorDetailSheet({
   const [activeTab, setActiveTab] = useState(initialTab);
   const queryClient = useQueryClient();
 
+  // Sync activeTab with initialTab when sheet opens
+  useEffect(() => {
+    if (open) setActiveTab(initialTab);
+  }, [open, initialTab]);
+
   // Fetch enquiry stats
   const { data: enquiries } = useQuery({
     queryKey: ["admin-partner-enquiries", partner?.id],
