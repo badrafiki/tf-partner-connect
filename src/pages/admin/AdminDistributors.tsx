@@ -248,16 +248,18 @@ function DistributorDetailSheet({
   open,
   onClose,
   onPartnerUpdated,
+  initialTab = "details",
 }: {
   partner: Partner | null;
   open: boolean;
   onClose: () => void;
   onPartnerUpdated?: (p: Partner) => void;
+  initialTab?: string;
 }) {
   const [editing, setEditing] = useState(false);
   const [resetLink, setResetLink] = useState<string | null>(null);
   const [emailModalOpen, setEmailModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState("details");
+  const [activeTab, setActiveTab] = useState(initialTab);
   const queryClient = useQueryClient();
 
   // Fetch enquiry stats
