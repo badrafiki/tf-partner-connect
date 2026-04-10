@@ -27,7 +27,7 @@ function formatUSD(n: number) {
 }
 
 export default function PortalProducts() {
-  const { discountPercentage, user } = useAuth();
+  const { discountPercentage, user, partnerId } = useAuth();
   const queryClient = useQueryClient();
   const discount = discountPercentage / 100;
 
@@ -46,12 +46,26 @@ export default function PortalProducts() {
     return () => clearTimeout(t);
   }, [searchInput]);
 
-  const { data: allProducts = [] } = useQuery({
-    queryKey: ["products-families"],
+  // Get allowed product IDs for this partner
+  const { data: allowedIds } = useQuery({
+    queryKey: ["partner-visible-products", partnerId],
     queryFn: async () => {
-      const { data } = await supabase.from("products_partner_view").select("family, category");
-      return data || [];
+      if (!partnerId) return null;
+      const { data } = await supabase.rpc("get_partner_visible_products", { p_partner_id: partnerId });
+      return data as string[] | null;
     },
+    enabled: !!partnerId,
+  });
+
+  // Get category counts filtered by partner access
+  const { data: accessCounts } = useQuery({
+    queryKey: ["partner-category-counts", partnerId],
+    queryFn: async () => {
+      if (!partnerId) return null;
+      const { data } = await supabase.rpc("get_category_counts_for_partner", { p_partner_id: partnerId });
+      return data as { family: string; category: string; product_count: number }[] | null;
+    },
+    enabled: !!partnerId,
   });
 
   const families = useMemo(() => {
