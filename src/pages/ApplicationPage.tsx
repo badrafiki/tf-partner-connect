@@ -7,7 +7,7 @@ import { CheckCircle, Loader2, Info } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { applicationSchema, type ApplicationFormValues } from "@/lib/application-schema";
-import { US_STATES } from "@/lib/us-states";
+import { US_STATES, CA_PROVINCES } from "@/lib/us-states";
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
