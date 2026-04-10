@@ -17,7 +17,7 @@ const PAGE_SIZE = 24;
 
 function getStockStatus(qty: number | null) {
   const q = qty ?? 0;
-  if (q === 0) return { label: "Out of stock", color: "text-red-600", dot: "bg-red-500" };
+  if (q === 0) return { label: "Stock due imminently", color: "text-amber-600", dot: "bg-amber-500" };
   if (q > 10) return { label: "In stock", color: "text-emerald-600", dot: "bg-emerald-500" };
   return { label: `Low stock (${q} left)`, color: "text-amber-600", dot: "bg-amber-500" };
 }
