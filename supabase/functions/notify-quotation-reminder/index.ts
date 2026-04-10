@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import { wrapEmail, h1, keyValue, ctaButton, signoff } from "../_shared/email-wrapper.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -55,24 +56,40 @@ Deno.serve(async (req) => {
       ? new Date(quotation.expires_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })
       : "Not set";
 
-    const emailRes = await fetch("https://api.resend.com/emails", {
+    const body = `
+      ${h1("Quotation Reminder")}
+      <p style="font-size:15px;color:#2D2D2D;line-height:1.6;margin:0 0 16px;">Dear ${partner.contact_name},</p>
+      <p style="font-size:15px;color:#2D2D2D;line-height:1.6;margin:0 0 16px;">This is a friendly reminder that your quotation <strong style="color:#1B3A6B;">${qtRef}</strong> is awaiting your response.</p>
+      <div style="background:#FEF3C7;border-left:3px solid #D97706;padding:12px 16px;margin:16px 0;border-radius:0 4px 4px 0;">
+        <p style="font-size:14px;color:#92400E;margin:0;"><strong>Expires:</strong> ${expiresAt}</p>
+      </div>
+      <p style="font-size:15px;color:#2D2D2D;line-height:1.6;margin:0 0 16px;">Log in to your partner portal to view and respond to this quotation.</p>
+      ${ctaButton("View Quotations →", "https://partners.total-filtration.com/portal/quotations")}
+      ${signoff()}
+    `;
+
+    const GATEWAY_URL = "https://connector-gateway.lovable.dev/resend";
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    let url: string;
+    if (LOVABLE_API_KEY) {
+      headers["Authorization"] = `Bearer ${LOVABLE_API_KEY}`;
+      headers["X-Connection-Api-Key"] = resendKey;
+      url = `${GATEWAY_URL}/emails`;
+    } else {
+      headers["Authorization"] = `Bearer ${resendKey}`;
+      url = "https://api.resend.com/emails";
+    }
+
+    const emailRes = await fetch(url, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${resendKey}`,
-      },
+      headers,
       body: JSON.stringify({
         from: "TF USA <notifications@total-filtration.com>",
         to: [partner.contact_email],
         subject: `Reminder — TF USA Quotation ${qtRef} Awaiting Response`,
-        html: `
-          <p>Dear ${partner.contact_name},</p>
-          <p>This is a friendly reminder that your quotation <strong>${qtRef}</strong> is awaiting your response and expires on <strong>${expiresAt}</strong>.</p>
-          <p>Log in to your partner portal to view and respond:</p>
-          <p><a href="https://tfusa.lovable.app/portal/quotations">View Quotations</a></p>
-          <br>
-          <p>The TF USA Team</p>
-        `,
+        html: wrapEmail(body),
       }),
     });
 

@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import { wrapEmail, h1, keyValue, ctaButton } from "../_shared/email-wrapper.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -24,7 +25,6 @@ Deno.serve(async (req) => {
     const resendKey = Deno.env.get("RESEND_API_KEY")!;
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
-    // Fetch quotation + partner + enquiry
     const { data: quotation } = await supabase
       .from("quotations")
       .select("*")
@@ -46,12 +46,12 @@ Deno.serve(async (req) => {
 
     const qtRef = "QT-" + quotation.id.slice(0, 8);
     const enqRef = quotation.enquiry_id ? "ENQ-" + quotation.enquiry_id.slice(0, 8) : "N/A";
-    const responseLabel = response === "accepted" ? "Accepted" : "Declined";
+    const responseLabel = response === "accepted" ? "✅ Accepted" : "❌ Declined";
+    const responsePlain = response === "accepted" ? "Accepted" : "Declined";
     const companyName = partner?.company_name || "Unknown";
     const contactName = partner?.contact_name || "Unknown";
     const contactEmail = partner?.contact_email || "Unknown";
 
-    // Fetch enquiry value
     let partnerValue = "N/A";
     if (quotation.enquiry_id) {
       const { data: enq } = await supabase
@@ -64,30 +64,41 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Send email to admin
-    await fetch("https://api.resend.com/emails", {
+    const body = `
+      ${h1(`Quotation ${responsePlain}`)}
+      ${keyValue("Quotation", qtRef)}
+      ${keyValue("Enquiry", enqRef)}
+      ${keyValue("Company", companyName)}
+      ${keyValue("Contact", `${contactName} (${contactEmail})`)}
+      ${keyValue("Value", partnerValue)}
+      ${keyValue("Response", responseLabel)}
+      ${reason ? keyValue("Reason", reason) : ""}
+      ${keyValue("Timestamp", new Date().toLocaleString("en-US", { dateStyle: "long", timeStyle: "short" }))}
+      ${ctaButton("View in Admin →", "https://partners.total-filtration.com/admin/quotations")}
+    `;
+
+    const GATEWAY_URL = "https://connector-gateway.lovable.dev/resend";
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    let url: string;
+    if (LOVABLE_API_KEY) {
+      headers["Authorization"] = `Bearer ${LOVABLE_API_KEY}`;
+      headers["X-Connection-Api-Key"] = resendKey;
+      url = `${GATEWAY_URL}/emails`;
+    } else {
+      headers["Authorization"] = `Bearer ${resendKey}`;
+      url = "https://api.resend.com/emails";
+    }
+
+    await fetch(url, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${resendKey}`,
-      },
+      headers,
       body: JSON.stringify({
         from: "TF USA Portal <notifications@total-filtration.com>",
         to: ["partners@total-filtration.com"],
-        subject: `Quotation ${qtRef} ${responseLabel} — ${companyName}`,
-        html: `
-          <h2>Quotation ${responseLabel}</h2>
-          <p><strong>Quotation:</strong> ${qtRef}</p>
-          <p><strong>Enquiry:</strong> ${enqRef}</p>
-          <p><strong>Company:</strong> ${companyName}</p>
-          <p><strong>Contact:</strong> ${contactName} (${contactEmail})</p>
-          <p><strong>Value:</strong> ${partnerValue}</p>
-          <p><strong>Response:</strong> ${responseLabel}</p>
-          ${reason ? `<p><strong>Reason:</strong> ${reason}</p>` : ""}
-          <p><strong>Timestamp:</strong> ${new Date().toISOString()}</p>
-          <hr>
-          <p><a href="https://tfusa.lovable.app/admin/quotations">View in admin</a></p>
-        `,
+        subject: `Quotation ${qtRef} ${responsePlain} — ${companyName}`,
+        html: wrapEmail(body),
       }),
     });
 

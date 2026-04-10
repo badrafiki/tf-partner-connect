@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import { wrapEmail, h1, signoff } from "../_shared/email-wrapper.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -45,25 +46,37 @@ Deno.serve(async (req) => {
       });
     }
 
-    const htmlBody = `
-      <p>Dear ${app.contact_first_name},</p>
-      <p>Thank you for your interest in becoming a TF USA distribution partner.</p>
-      <p>After reviewing your application, we are unable to proceed at this time.</p>
-      <p>If you have any questions, please contact us at <a href="mailto:partners@total-filtration.com">partners@total-filtration.com</a>.</p>
-      <p>The TF USA Team</p>
+    const body = `
+      ${h1("Application Update")}
+      <p style="font-size:15px;color:#2D2D2D;line-height:1.6;margin:0 0 16px;">Dear ${app.contact_first_name},</p>
+      <p style="font-size:15px;color:#2D2D2D;line-height:1.6;margin:0 0 16px;">Thank you for your interest in becoming a TF USA distribution partner.</p>
+      <p style="font-size:15px;color:#2D2D2D;line-height:1.6;margin:0 0 16px;">After carefully reviewing your application, we are unable to proceed at this time.</p>
+      <p style="font-size:15px;color:#2D2D2D;line-height:1.6;margin:0 0 16px;">If you have any questions, please don't hesitate to contact us at <a href="mailto:partners@total-filtration.com" style="color:#1B3A6B;text-decoration:none;font-weight:600;">partners@total-filtration.com</a>.</p>
+      ${signoff()}
     `;
 
-    const emailRes = await fetch("https://api.resend.com/emails", {
+    const GATEWAY_URL = "https://connector-gateway.lovable.dev/resend";
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    let url: string;
+    if (LOVABLE_API_KEY) {
+      headers["Authorization"] = `Bearer ${LOVABLE_API_KEY}`;
+      headers["X-Connection-Api-Key"] = RESEND_API_KEY;
+      url = `${GATEWAY_URL}/emails`;
+    } else {
+      headers["Authorization"] = `Bearer ${RESEND_API_KEY}`;
+      url = "https://api.resend.com/emails";
+    }
+
+    const emailRes = await fetch(url, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-      },
+      headers,
       body: JSON.stringify({
         from: "TF USA Portal <partners@total-filtration.com>",
         to: [app.contact_email],
         subject: "Your TF USA Partner Application",
-        html: htmlBody,
+        html: wrapEmail(body),
       }),
     });
 
