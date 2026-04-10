@@ -474,6 +474,17 @@ function QuotationManageSheet({ quotation, partner, enquiry, onUpdated }: {
         <Textarea value={adminNotes} onChange={(e) => setAdminNotes(e.target.value)} onBlur={saveAdminNotes} rows={3} />
       </div>
 
+      {/* Terms & Conditions */}
+      <div>
+        <p className="text-sm font-medium mb-2">Terms & Conditions</p>
+        <Card className="bg-muted">
+          <CardContent className="pt-4 text-sm text-muted-foreground space-y-3">
+            <p>All prices are valid for 30 days from the quote date unless otherwise specified. Payment terms as per customer agreement. Delivery times are estimates and subject to confirmation.</p>
+            <p>All pricing is in USD unless otherwise specified, for our Canadian customers, your order may be subjected to GST/VAT, this is payable by the buyer.</p>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* ModuSys Section */}
       <div>
         <p className="text-sm font-medium mb-2">ModuSys</p>
