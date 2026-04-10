@@ -798,7 +798,9 @@ export default function ApplicationPage() {
           )}
         </Button>
         <p className="text-xs text-muted-foreground text-center mt-3 mb-8">
-          By submitting this form you confirm that all information provided is accurate and you agree to TF USA's Terms & Conditions.
+          By submitting this form you confirm that all information provided is accurate and you agree to our{" "}
+          <a href="/terms" target="_blank" className="underline hover:text-foreground">Terms &amp; Conditions</a>{" "}and{" "}
+          <a href="/privacy" target="_blank" className="underline hover:text-foreground">Privacy Policy</a>.
         </p>
       </form>
     </div>

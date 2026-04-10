@@ -254,6 +254,17 @@ export function PartnerLayout() {
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <Outlet />
       </main>
+
+      {/* Footer */}
+      <footer className="border-t border-gray-200 bg-white py-4 px-6">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-gray-500">
+          <span>© {new Date().getFullYear()} Total Filtration USA LLC</span>
+          <div className="flex gap-4">
+            <a href="/privacy" className="hover:text-gray-700 underline">Privacy Policy</a>
+            <a href="/terms" className="hover:text-gray-700 underline">Terms & Conditions</a>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
