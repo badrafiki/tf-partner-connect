@@ -639,7 +639,7 @@ export default function ApplicationPage() {
             <Label className="mb-2 block">Requested Payment Terms</Label>
             <Controller control={control} name="requested_payment_terms" render={({ field }) => (
               <RadioGroup value={field.value} onValueChange={field.onChange} className="flex flex-wrap gap-4">
-                {["Net 30", "Net 45", "Net 60", "2/10 Net 30", "Prepay", "Credit Card"].map((v) => (
+                {["Net 30", "30 Days EOM", "Prepay", "Credit Card"].map((v) => (
                   <div key={v} className="flex items-center gap-1.5"><RadioGroupItem value={v} id={`pt-${v}`} /><Label htmlFor={`pt-${v}`} className="font-normal cursor-pointer">{v}</Label></div>
                 ))}
               </RadioGroup>
@@ -656,45 +656,6 @@ export default function ApplicationPage() {
               </RadioGroup>
             )} />
           </div>
-
-          <InfoBox>
-            Banking information is used solely for payment processing and is held securely. It will not be shared with third parties.
-          </InfoBox>
-
-          <FieldRow>
-            <div>
-              <Label>Bank Name</Label>
-              <Input {...register("bank_name")} />
-            </div>
-            <div>
-              <Label>Account Name</Label>
-              <Input {...register("bank_account_name")} />
-            </div>
-          </FieldRow>
-
-          <div className="mb-4">
-            <Label className="mb-2 block">Account Type</Label>
-            <Controller control={control} name="bank_account_type" render={({ field }) => (
-              <RadioGroup value={field.value} onValueChange={field.onChange} className="flex gap-4">
-                {["Checking", "Savings"].map((v) => (
-                  <div key={v} className="flex items-center gap-1.5"><RadioGroupItem value={v} id={`ba-${v}`} /><Label htmlFor={`ba-${v}`} className="font-normal cursor-pointer">{v}</Label></div>
-                ))}
-              </RadioGroup>
-            )} />
-          </div>
-
-          <FieldRow>
-            <div>
-              <Label>Routing Number</Label>
-              <Input {...register("bank_routing_number")} maxLength={9} />
-              <FieldError message={errors.bank_routing_number?.message} />
-            </div>
-            <div>
-              <Label>Account Number</Label>
-              <Input {...register("bank_account_number")} />
-              <FieldError message={errors.bank_account_number?.message} />
-            </div>
-          </FieldRow>
         </SectionCard>
 
         {/* S6 — Tax & Compliance */}

@@ -54,11 +54,6 @@ export const applicationSchema = z.object({
   requested_credit_limit: z.string().optional().default(""),
   requested_payment_terms: z.string().optional().default(""),
   preferred_payment_method: z.string().optional().default(""),
-  bank_name: z.string().optional().default(""),
-  bank_account_name: z.string().optional().default(""),
-  bank_account_type: z.string().optional().default(""),
-  bank_routing_number: z.string().regex(/^\d{9}$/, "Must be 9 digits").or(z.literal("")).optional().default(""),
-  bank_account_number: z.string().regex(/^\d+$/, "Must be numeric").or(z.literal("")).optional().default(""),
   annual_volume_estimate: z.string().optional().default(""),
 
   // Section 6 — Tax & Compliance
