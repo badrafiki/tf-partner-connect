@@ -13,8 +13,9 @@ Deno.serve(async (req) => {
 
   try {
     const authHeader = req.headers.get("Authorization") ?? "";
-    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-    const isCronCall = authHeader === `Bearer ${serviceKey}`;
+    const integrationSecret = req.headers.get("x-integration-secret");
+    const expectedSecret = Deno.env.get("INTEGRATION_SECRET");
+    const isCronCall = (integrationSecret && integrationSecret === expectedSecret);
 
     if (!isCronCall) {
       // Normal admin auth check
