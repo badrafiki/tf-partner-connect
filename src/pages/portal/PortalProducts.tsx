@@ -137,6 +137,13 @@ export default function PortalProducts() {
   const totalCount = data?.pages[0]?.count || 0;
   const remaining = totalCount - products.length;
 
+  // Track search after results load
+  useEffect(() => {
+    if (debouncedSearch && totalCount > 0) {
+      analytics.productSearched(debouncedSearch, totalCount);
+    }
+  }, [debouncedSearch, totalCount]);
+
   const toggleFavMutation = useMutation({
     mutationFn: async (productId: string) => {
       if (!user) return;
