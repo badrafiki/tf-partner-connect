@@ -4,14 +4,25 @@
 
 @layer base {
   :root {
+    /* TF USA Brand Tokens */
+    --tf-navy: 215 58% 26%;
+    --tf-navy-dark: 215 63% 19%;
+    --tf-navy-light: 215 50% 94%;
+    --tf-red: 358 73% 47%;
+    --tf-red-dark: 358 75% 38%;
+    --tf-grey-bg: 210 20% 98%;
+    --tf-grey-border: 220 13% 91%;
+    --tf-text-primary: 0 0% 18%;
+    --tf-text-secondary: 220 9% 46%;
+
     --background: 210 20% 98%;
-    --foreground: 215 28% 17%;
+    --foreground: 0 0% 18%;
 
     --card: 0 0% 100%;
-    --card-foreground: 215 28% 17%;
+    --card-foreground: 0 0% 18%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 215 28% 17%;
+    --popover-foreground: 0 0% 18%;
 
     --primary: 215 58% 26%;
     --primary-foreground: 0 0% 100%;
@@ -20,27 +31,27 @@
     --secondary-foreground: 215 58% 26%;
 
     --muted: 210 20% 96%;
-    --muted-foreground: 215 16% 47%;
+    --muted-foreground: 220 9% 46%;
 
-    --accent: 356 72% 47%;
+    --accent: 358 73% 47%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
     --ring: 215 58% 26%;
 
     --radius: 0.5rem;
 
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 215 28% 17%;
+    --sidebar-foreground: 0 0% 18%;
     --sidebar-primary: 215 58% 26%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 210 20% 96%;
+    --sidebar-accent: 215 50% 94%;
     --sidebar-accent-foreground: 215 58% 26%;
-    --sidebar-border: 214 32% 91%;
+    --sidebar-border: 220 13% 91%;
     --sidebar-ring: 215 58% 26%;
   }
 
@@ -63,7 +74,7 @@
     --muted: 215 28% 17%;
     --muted-foreground: 215 16% 65%;
 
-    --accent: 356 72% 47%;
+    --accent: 358 73% 47%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 63% 31%;
