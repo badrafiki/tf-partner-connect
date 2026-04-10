@@ -12,10 +12,10 @@ import {
 
 const tierColors: Record<string, { bg: string; text: string }> = {
   Bronze: { bg: "#CD7F32", text: "#FFFFFF" },
-  Silver: { bg: "#C0C0C0", text: "#1B3A6B" },
-  Gold: { bg: "#FFD700", text: "#1B3A6B" },
-  Platinum: { bg: "#E5E4E2", text: "#1B3A6B" },
-  Diamond: { bg: "#B9F2FF", text: "#1B3A6B" },
+  Silver: { bg: "#9CA3AF", text: "#FFFFFF" },
+  Gold: { bg: "#F59E0B", text: "#FFFFFF" },
+  Platinum: { bg: "#6366F1", text: "#FFFFFF" },
+  Diamond: { bg: "#06B6D4", text: "#FFFFFF" },
 };
 
 const notifIcons: Record<string, { icon: typeof Bell; color: string }> = {
