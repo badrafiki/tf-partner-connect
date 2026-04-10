@@ -1,0 +1,1 @@
+UPDATE partners SET active = true WHERE user_id = '9287a354-d061-4a90-945b-f1ccf931ac4c';
