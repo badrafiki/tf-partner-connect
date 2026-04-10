@@ -150,7 +150,7 @@ export default function PortalDashboard() {
           <p className="text-white/60 text-sm mt-0.5">{companyName}</p>
         </div>
         <div className="text-right">
-          <span className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${tc.bg} ${tc.text}`}>
+          <span className="inline-block px-3 py-1 rounded-full text-sm font-semibold" style={{ backgroundColor: tc.bg, color: tc.text }}>
             {tier} Partner
           </span>
           <p className="text-white/60 text-xs mt-1">{discountPercentage}% partner discount</p>
