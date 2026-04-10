@@ -11,11 +11,11 @@ import {
 } from "lucide-react";
 
 const tierColors: Record<string, { bg: string; text: string }> = {
-  Bronze: { bg: "bg-[#CD7F32]", text: "text-white" },
-  Silver: { bg: "bg-muted-foreground", text: "text-white" },
-  Gold: { bg: "bg-amber-400", text: "text-white" },
-  Platinum: { bg: "bg-indigo-500", text: "text-white" },
-  Diamond: { bg: "bg-cyan-500", text: "text-white" },
+  Bronze: { bg: "#CD7F32", text: "#FFFFFF" },
+  Silver: { bg: "#C0C0C0", text: "#1B3A6B" },
+  Gold: { bg: "#FFD700", text: "#1B3A6B" },
+  Platinum: { bg: "#E5E4E2", text: "#1B3A6B" },
+  Diamond: { bg: "#B9F2FF", text: "#1B3A6B" },
 };
 
 const notifIcons: Record<string, { icon: typeof Bell; color: string }> = {
@@ -150,7 +150,7 @@ export default function PortalDashboard() {
           <p className="text-white/60 text-sm mt-0.5">{companyName}</p>
         </div>
         <div className="text-right">
-          <span className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${tc.bg} ${tc.text}`}>
+          <span className="inline-block px-3 py-1 rounded-full text-sm font-semibold" style={{ backgroundColor: tc.bg, color: tc.text }}>
             {tier} Partner
           </span>
           <p className="text-white/60 text-xs mt-1">{discountPercentage}% partner discount</p>
