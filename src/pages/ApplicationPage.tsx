@@ -656,7 +656,7 @@ export default function ApplicationPage() {
               </RadioGroup>
             )} />
           </div>
-
+        </SectionCard>
 
         {/* S6 — Tax & Compliance */}
         <SectionCard index={5} title="Tax & Compliance" id="section-5">
