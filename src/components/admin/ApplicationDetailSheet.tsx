@@ -229,10 +229,6 @@ export function ApplicationDetailSheet({ application, onClose, onRefresh }: Prop
 
   if (!app) return null;
 
-  
-  const maskedAccount = app.bank_account_number
-    ? "••••" + app.bank_account_number.slice(-4)
-    : "—";
 
   return (
     <>
@@ -317,11 +313,6 @@ export function ApplicationDetailSheet({ application, onClose, onRefresh }: Prop
               <ReadOnlyField label="Payment Terms" value={app.requested_payment_terms} />
               <ReadOnlyField label="Payment Method" value={app.preferred_payment_method} />
               <ReadOnlyField label="Annual Volume" value={app.annual_volume_estimate} />
-              <ReadOnlyField label="Bank" value={app.bank_name} />
-              <ReadOnlyField label="Account Name" value={app.bank_account_name} />
-              <ReadOnlyField label="Account Type" value={app.bank_account_type} />
-              <ReadOnlyField label="Routing #" value={app.bank_routing_number} />
-              <ReadOnlyField label="Account #" value={maskedAccount} />
             </div>
 
             {/* S6 — Tax */}
