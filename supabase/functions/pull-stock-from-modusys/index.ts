@@ -37,7 +37,7 @@ Deno.serve(async (req) => {
 
     const adminClient = createClient(supabaseUrl, serviceKey);
 
-    const { data: isAdmin } = await adminClient.rpc("has_role", {
+    const { data: isAdmin } = await userClient.rpc("has_role", {
       uid: user.id,
       r: "admin",
     });

@@ -48,7 +48,7 @@ Deno.serve(async (req) => {
     }
 
     const adminClient = createClient(supabaseUrl, serviceKey);
-    const { data: isAdmin } = await adminClient.rpc("has_role", { uid: user.id, r: "admin" });
+    const { data: isAdmin } = await userClient.rpc("has_role", { uid: user.id, r: "admin" });
     if (!isAdmin) {
       return new Response(JSON.stringify({ error: "Forbidden" }), {
         status: 403,
