@@ -101,6 +101,109 @@ function PartnerForm({
   );
 }
 
+/* ───── Change Email Modal ───── */
+function ChangeEmailModal({
+  partner,
+  open,
+  onClose,
+  onChanged,
+}: {
+  partner: Partner;
+  open: boolean;
+  onClose: () => void;
+  onChanged: () => void;
+}) {
+  const [newEmail, setNewEmail] = useState("");
+  const [confirmEmail, setConfirmEmail] = useState("");
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const emailsMatch = newEmail === confirmEmail;
+  const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail);
+  const canSubmit = isValidEmail && emailsMatch && newEmail !== partner.contact_email;
+
+  const handleSubmit = async () => {
+    if (!canSubmit) return;
+    setSending(true);
+    setError(null);
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke("change-partner-email", {
+        body: { partner_id: partner.id, new_email: newEmail },
+      });
+      if (fnError) throw fnError;
+      if (data?.error) {
+        setError(data.error);
+        return;
+      }
+      toast.success(`Confirmation email sent to ${newEmail}. Email will update once confirmed.`);
+      onChanged();
+      onClose();
+      setNewEmail("");
+      setConfirmEmail("");
+    } catch (err: any) {
+      setError(err.message || "Failed to change email");
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={v => { if (!v) { onClose(); setError(null); } }}>
+      <DialogContent className="max-w-[480px]">
+        <DialogHeader>
+          <DialogTitle>Change login email</DialogTitle>
+          <DialogDescription>
+            This will update the partner's login email across all systems.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4 py-2">
+          <div>
+            <Label className="text-muted-foreground text-sm">Current email</Label>
+            <p className="text-sm font-medium mt-1">{partner.contact_email}</p>
+          </div>
+          <div>
+            <Label>New email</Label>
+            <Input
+              type="email"
+              value={newEmail}
+              onChange={e => setNewEmail(e.target.value)}
+              placeholder="new@example.com"
+            />
+          </div>
+          <div>
+            <Label>Confirm new email</Label>
+            <Input
+              type="email"
+              value={confirmEmail}
+              onChange={e => setConfirmEmail(e.target.value)}
+              placeholder="Confirm new email"
+            />
+            {confirmEmail && !emailsMatch && (
+              <p className="text-xs text-destructive mt-1">Emails do not match</p>
+            )}
+          </div>
+          <div className="bg-amber-50 border border-amber-200 rounded-md p-3 text-sm text-amber-800">
+            The partner will receive a confirmation email at their new address.
+            They must click the link to complete the change.
+            Their current email will continue to work until confirmed.
+          </div>
+          {error && (
+            <div className="text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md p-3">
+              {error}
+            </div>
+          )}
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose} disabled={sending}>Cancel</Button>
+          <Button onClick={handleSubmit} disabled={!canSubmit || sending} className="bg-primary">
+            {sending ? <><Loader2 className="h-4 w-4 mr-1 animate-spin" />Sending...</> : <>Send confirmation email →</>}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 /* ───── ModuSys Sync Button ───── */
 function ModuSysSyncButton({ partner, onSynced }: { partner: Partner; onSynced: (p: Partner) => void }) {
   const [syncing, setSyncing] = useState(false);
