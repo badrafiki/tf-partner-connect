@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link } from "react-router-dom";
+import tfLogoImport from "@/assets/tf-usa-logo.svg";
 import { CheckCircle, Loader2, Info } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
