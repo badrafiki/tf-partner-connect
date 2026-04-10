@@ -1,8 +1,10 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Search, Plus, Pencil, ToggleLeft, ToggleRight, Users, CheckCircle2, AlertCircle, RefreshCw, Loader2, Mail } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import ProductAccessTab from "@/components/admin/ProductAccessTab";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -246,16 +248,24 @@ function DistributorDetailSheet({
   open,
   onClose,
   onPartnerUpdated,
+  initialTab = "details",
 }: {
   partner: Partner | null;
   open: boolean;
   onClose: () => void;
   onPartnerUpdated?: (p: Partner) => void;
+  initialTab?: string;
 }) {
   const [editing, setEditing] = useState(false);
   const [resetLink, setResetLink] = useState<string | null>(null);
   const [emailModalOpen, setEmailModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState(initialTab);
   const queryClient = useQueryClient();
+
+  // Sync activeTab with initialTab when sheet opens
+  useEffect(() => {
+    if (open) setActiveTab(initialTab);
+  }, [open, initialTab]);
 
   // Fetch enquiry stats
   const { data: enquiries } = useQuery({
@@ -316,162 +326,171 @@ function DistributorDetailSheet({
   if (!partner) return null;
 
   return (
-    <Sheet open={open} onOpenChange={v => { if (!v) { setEditing(false); onClose(); } }}>
-      <SheetContent className="w-full sm:max-w-[500px] overflow-y-auto">
+    <Sheet open={open} onOpenChange={v => { if (!v) { setEditing(false); setActiveTab("details"); onClose(); } }}>
+      <SheetContent className="w-full sm:max-w-[560px] overflow-y-auto">
         <SheetHeader>
-          <SheetTitle className="flex items-center justify-between">
-            <span>{partner.company_name}</span>
-            {!editing && <Button size="sm" variant="outline" onClick={() => setEditing(true)}><Pencil className="h-3 w-3 mr-1" />Edit</Button>}
-          </SheetTitle>
+          <SheetTitle>{partner.company_name}</SheetTitle>
         </SheetHeader>
 
-        {editing ? (
-          <PartnerForm
-            initial={partner}
-            onSave={data => updateMutation.mutate(data)}
-            saving={updateMutation.isPending}
-          />
-        ) : (
-          <div className="space-y-5 py-4">
-            <div className="flex items-center gap-3">
-              <Avatar className="h-12 w-12">
-                <AvatarImage src={partner.company_logo_url || undefined} />
-                <AvatarFallback className="bg-primary/10 text-primary font-semibold">{getInitials(partner.company_name)}</AvatarFallback>
-              </Avatar>
-              <div>
-                <p className="font-semibold text-foreground">{partner.company_name}</p>
-                <Badge variant="secondary">{partner.tier_label}</Badge>
-                <Badge className="ml-1" variant={partner.active ? "default" : "outline"}>
-                  {partner.active ? "Active" : "Inactive"}
-                </Badge>
-              </div>
-            </div>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-2">
+          <TabsList className="w-full">
+            <TabsTrigger value="details" className="flex-1">Details</TabsTrigger>
+            <TabsTrigger value="product-access" className="flex-1">Product Access</TabsTrigger>
+          </TabsList>
 
-            <Separator />
-
-            <div className="grid grid-cols-2 gap-3 text-sm">
-              <div><p className="text-muted-foreground">Contact</p><p className="font-medium">{partner.contact_name}</p></div>
-              <div><p className="text-muted-foreground">Email</p>
-                <div className="flex items-center gap-1">
-                  <p className="font-medium">{partner.contact_email}</p>
-                  {partner.user_id && (
-                    <button onClick={() => setEmailModalOpen(true)} className="text-xs text-primary hover:underline ml-1">Change</button>
-                  )}
+          <TabsContent value="details">
+            {editing ? (
+              <PartnerForm
+                initial={partner}
+                onSave={data => updateMutation.mutate(data)}
+                saving={updateMutation.isPending}
+              />
+            ) : (
+              <div className="space-y-5 py-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-12 w-12">
+                      <AvatarImage src={partner.company_logo_url || undefined} />
+                      <AvatarFallback className="bg-primary/10 text-primary font-semibold">{getInitials(partner.company_name)}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="font-semibold text-foreground">{partner.company_name}</p>
+                      <Badge variant="secondary">{partner.tier_label}</Badge>
+                      <Badge className="ml-1" variant={partner.active ? "default" : "outline"}>
+                        {partner.active ? "Active" : "Inactive"}
+                      </Badge>
+                    </div>
+                  </div>
+                  <Button size="sm" variant="outline" onClick={() => setEditing(true)}><Pencil className="h-3 w-3 mr-1" />Edit</Button>
                 </div>
-              </div>
-              <div><p className="text-muted-foreground">Phone</p><p className="font-medium">{partner.phone || "—"}</p></div>
-              <div><p className="text-muted-foreground">State</p><p className="font-medium">{partner.state || "—"}</p></div>
-              <div><p className="text-muted-foreground">EIN</p><p className="font-medium">{partner.ein || "—"}</p></div>
-              <div><p className="text-muted-foreground">Rep</p><p className="font-medium">{partner.assigned_rep || "—"}</p></div>
-              <div><p className="text-muted-foreground">Discount</p><p className="font-medium text-green-600">{partner.discount_percentage}%</p></div>
-              <div><p className="text-muted-foreground">Account linked</p><p className="font-medium">{partner.user_id ? "Yes" : "No"}</p></div>
-            </div>
 
-            <Separator />
+                <Separator />
 
-            {/* ModuSys Section */}
-            <div>
-              <p className="text-sm font-semibold mb-2">ModuSys</p>
-              {partner.modusys_customer_id ? (
-                <div className="bg-green-50 border border-green-200 rounded-md p-3 space-y-2">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-green-600" />
-                    <span className="text-sm font-medium text-green-800">Customer synced</span>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div><p className="text-muted-foreground">Contact</p><p className="font-medium">{partner.contact_name}</p></div>
+                  <div><p className="text-muted-foreground">Email</p>
+                    <div className="flex items-center gap-1">
+                      <p className="font-medium">{partner.contact_email}</p>
+                      {partner.user_id && (
+                        <button onClick={() => setEmailModalOpen(true)} className="text-xs text-primary hover:underline ml-1">Change</button>
+                      )}
+                    </div>
                   </div>
-                  <div className="text-xs text-muted-foreground">
-                    <span className="font-mono">{String(partner.modusys_customer_id).slice(0, 12)}…</span>
-                  </div>
-                  {partner.modusys_synced_at && (
-                    <div className="text-xs text-muted-foreground">
-                      Synced {formatDistanceToNow(new Date(partner.modusys_synced_at), { addSuffix: true })}
+                  <div><p className="text-muted-foreground">Phone</p><p className="font-medium">{partner.phone || "—"}</p></div>
+                  <div><p className="text-muted-foreground">State</p><p className="font-medium">{partner.state || "—"}</p></div>
+                  <div><p className="text-muted-foreground">EIN</p><p className="font-medium">{partner.ein || "—"}</p></div>
+                  <div><p className="text-muted-foreground">Rep</p><p className="font-medium">{partner.assigned_rep || "—"}</p></div>
+                  <div><p className="text-muted-foreground">Discount</p><p className="font-medium text-green-600">{partner.discount_percentage}%</p></div>
+                  <div><p className="text-muted-foreground">Account linked</p><p className="font-medium">{partner.user_id ? "Yes" : "No"}</p></div>
+                </div>
+
+                <Separator />
+
+                <div>
+                  <p className="text-sm font-semibold mb-2">ModuSys</p>
+                  {partner.modusys_customer_id ? (
+                    <div className="bg-green-50 border border-green-200 rounded-md p-3 space-y-2">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-green-600" />
+                        <span className="text-sm font-medium text-green-800">Customer synced</span>
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        <span className="font-mono">{String(partner.modusys_customer_id).slice(0, 12)}…</span>
+                      </div>
+                      {partner.modusys_synced_at && (
+                        <div className="text-xs text-muted-foreground">
+                          Synced {formatDistanceToNow(new Date(partner.modusys_synced_at), { addSuffix: true })}
+                        </div>
+                      )}
+                      <ModuSysSyncButton partner={partner} onSynced={(p) => onPartnerUpdated?.(p)} />
+                    </div>
+                  ) : (
+                    <div className="bg-muted rounded-md p-3 space-y-2">
+                      <div className="flex items-center gap-2">
+                        <AlertCircle className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">Not synced to ModuSys</span>
+                      </div>
+                      <ModuSysSyncButton partner={partner} onSynced={(p) => onPartnerUpdated?.(p)} />
                     </div>
                   )}
-                  <ModuSysSyncButton partner={partner} onSynced={(p) => onPartnerUpdated?.(p)} />
                 </div>
-              ) : (
-                <div className="bg-muted rounded-md p-3 space-y-2">
-                  <div className="flex items-center gap-2">
-                    <AlertCircle className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">Not synced to ModuSys</span>
+
+                <Separator />
+
+                <div>
+                  <p className="text-sm font-semibold mb-2">Enquiry Stats</p>
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div className="bg-muted rounded-md p-3">
+                      <p className="text-muted-foreground">Total Enquiries</p>
+                      <p className="text-lg font-bold">{enquiries?.length ?? 0}</p>
+                    </div>
+                    <div className="bg-muted rounded-md p-3">
+                      <p className="text-muted-foreground">Total Value</p>
+                      <p className="text-lg font-bold">{formatUSD(totalValue)}</p>
+                    </div>
                   </div>
-                  <ModuSysSyncButton partner={partner} onSynced={(p) => onPartnerUpdated?.(p)} />
                 </div>
-              )}
-            </div>
 
-            <Separator />
+                {recentEnquiries.length > 0 && (
+                  <div>
+                    <p className="text-sm font-semibold mb-2">Recent Enquiries</p>
+                    <div className="space-y-2">
+                      {recentEnquiries.map(e => (
+                        <div key={e.id} className="flex items-center justify-between bg-muted rounded-md p-3 text-sm">
+                          <div>
+                            <p className="font-medium">{new Date(e.submitted_at!).toLocaleDateString()}</p>
+                            <p className="text-muted-foreground">{(e.line_items as any[]).length} items</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-medium">{formatUSD(Number(e.total_partner_usd) || 0)}</p>
+                            <Badge variant="secondary" className="text-xs">{e.status}</Badge>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
-            <div>
-              <p className="text-sm font-semibold mb-2">Enquiry Stats</p>
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div className="bg-muted rounded-md p-3">
-                  <p className="text-muted-foreground">Total Enquiries</p>
-                  <p className="text-lg font-bold">{enquiries?.length ?? 0}</p>
-                </div>
-                <div className="bg-muted rounded-md p-3">
-                  <p className="text-muted-foreground">Total Value</p>
-                  <p className="text-lg font-bold">{formatUSD(totalValue)}</p>
-                </div>
-              </div>
-            </div>
+                <Separator />
 
-            {recentEnquiries.length > 0 && (
-              <div>
-                <p className="text-sm font-semibold mb-2">Recent Enquiries</p>
                 <div className="space-y-2">
-                  {recentEnquiries.map(e => (
-                    <div key={e.id} className="flex items-center justify-between bg-muted rounded-md p-3 text-sm">
-                      <div>
-                        <p className="font-medium">{new Date(e.submitted_at!).toLocaleDateString()}</p>
-                        <p className="text-muted-foreground">{(e.line_items as any[]).length} items</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-medium">{formatUSD(Number(e.total_partner_usd) || 0)}</p>
-                        <Badge variant="secondary" className="text-xs">{e.status}</Badge>
-                      </div>
-                    </div>
-                  ))}
+                  {partner.user_id && (
+                    <Button variant="outline" className="w-full" onClick={handleResetPassword}>
+                      Reset Password
+                    </Button>
+                  )}
+                  {!partner.user_id && (
+                    <Button variant="outline" className="w-full" onClick={handleResendInvite}>
+                      Resend Invite
+                    </Button>
+                  )}
                 </div>
               </div>
             )}
+          </TabsContent>
 
-            <Separator />
+          <TabsContent value="product-access">
+            <ProductAccessTab partner={partner} />
+          </TabsContent>
+        </Tabs>
 
-            <div className="space-y-2">
-              {partner.user_id && (
-                <Button variant="outline" className="w-full" onClick={handleResetPassword}>
-                  Reset Password
-                </Button>
-              )}
-              {!partner.user_id && (
-                <Button variant="outline" className="w-full" onClick={handleResendInvite}>
-                  Resend Invite
-                </Button>
-              )}
-            </div>
-          </div>
-        )}
-        {partner && (
-          <ChangeEmailModal
-            partner={partner}
-            open={emailModalOpen}
-            onClose={() => setEmailModalOpen(false)}
-            onChanged={() => {
-              queryClient.invalidateQueries({ queryKey: ["admin-partners"] });
-              const refreshPartner = async () => {
-                const { data: updated } = await supabase.from("partners").select("*").eq("id", partner.id).single();
-                if (updated) onPartnerUpdated?.(updated as Partner);
-              };
-              refreshPartner();
-            }}
-          />
-        )}
+        <ChangeEmailModal
+          partner={partner}
+          open={emailModalOpen}
+          onClose={() => setEmailModalOpen(false)}
+          onChanged={() => {
+            queryClient.invalidateQueries({ queryKey: ["admin-partners"] });
+            const refreshPartner = async () => {
+              const { data: updated } = await supabase.from("partners").select("*").eq("id", partner.id).single();
+              if (updated) onPartnerUpdated?.(updated as Partner);
+            };
+            refreshPartner();
+          }}
+        />
       </SheetContent>
     </Sheet>
   );
 }
-
-/* ───── Add Sheet ───── */
 function AddDistributorSheet({
   open,
   onClose,
@@ -576,6 +595,7 @@ export default function AdminDistributors() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
   const [selected, setSelected] = useState<Partner | null>(null);
+  const [selectedTab, setSelectedTab] = useState<string>("details");
   const [addOpen, setAddOpen] = useState(false);
   const queryClient = useQueryClient();
 
@@ -585,6 +605,23 @@ export default function AdminDistributors() {
       const { data, error } = await supabase.from("partners").select("*").order("company_name");
       if (error) throw error;
       return data as Partner[];
+    },
+  });
+
+  // Fetch access rule counts per partner
+  const { data: accessSummary = {} } = useQuery({
+    queryKey: ["partner-access-summary"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("partner_product_access" as any)
+        .select("partner_id, family, product_id");
+      const map: Record<string, { familyCount: number; skuCount: number }> = {};
+      (data || []).forEach((r: any) => {
+        if (!map[r.partner_id]) map[r.partner_id] = { familyCount: 0, skuCount: 0 };
+        if (r.family) map[r.partner_id].familyCount++;
+        else map[r.partner_id].skuCount++;
+      });
+      return map;
     },
   });
 
@@ -667,13 +704,14 @@ export default function AdminDistributors() {
                 <TableHead>Tier</TableHead>
                 <TableHead>Rep</TableHead>
                 <TableHead>ModuSys</TableHead>
+                <TableHead>Catalog</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="w-24">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filtered.map(p => (
-                <TableRow key={p.id} className="cursor-pointer" onClick={() => setSelected(p)}>
+                <TableRow key={p.id} className="cursor-pointer" onClick={() => { setSelectedTab("details"); setSelected(p); }}>
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <Avatar className="h-6 w-6">
@@ -693,6 +731,21 @@ export default function AdminDistributors() {
                   <TableCell className="text-sm text-muted-foreground">{p.assigned_rep || "—"}</TableCell>
                   <TableCell>
                     <ModuSysStatusCell partner={p} onSynced={handlePartnerSynced} />
+                  </TableCell>
+                  <TableCell>
+                    {(() => {
+                      const summary = accessSummary[p.id];
+                      if (!summary) return (
+                        <Badge className="bg-green-100 text-green-800 cursor-pointer" onClick={(e) => { e.stopPropagation(); setSelectedTab("product-access"); setSelected(p); }}>
+                          Full access
+                        </Badge>
+                      );
+                      return (
+                        <Badge className="bg-amber-100 text-amber-800 cursor-pointer" onClick={(e) => { e.stopPropagation(); setSelectedTab("product-access"); setSelected(p); }}>
+                          Restricted
+                        </Badge>
+                      );
+                    })()}
                   </TableCell>
                   <TableCell>
                     <Badge variant={p.active ? "default" : "outline"} className={p.active ? "bg-green-100 text-green-800 border-green-200" : ""}>
@@ -716,7 +769,7 @@ export default function AdminDistributors() {
         </div>
       )}
 
-      <DistributorDetailSheet partner={selected} open={!!selected} onClose={() => setSelected(null)} onPartnerUpdated={handlePartnerSynced} />
+      <DistributorDetailSheet partner={selected} open={!!selected} onClose={() => setSelected(null)} onPartnerUpdated={handlePartnerSynced} initialTab={selectedTab} />
       <AddDistributorSheet open={addOpen} onClose={() => setAddOpen(false)} />
     </div>
   );

@@ -27,7 +27,7 @@ function formatUSD(n: number) {
 }
 
 export default function PortalProducts() {
-  const { discountPercentage, user } = useAuth();
+  const { discountPercentage, user, partnerId } = useAuth();
   const queryClient = useQueryClient();
   const discount = discountPercentage / 100;
 
@@ -46,23 +46,38 @@ export default function PortalProducts() {
     return () => clearTimeout(t);
   }, [searchInput]);
 
-  const { data: allProducts = [] } = useQuery({
-    queryKey: ["products-families"],
+  // Get allowed product IDs for this partner
+  const { data: allowedIds } = useQuery({
+    queryKey: ["partner-visible-products", partnerId],
     queryFn: async () => {
-      const { data } = await supabase.from("products_partner_view").select("family, category");
-      return data || [];
+      if (!partnerId) return null;
+      const { data } = await supabase.rpc("get_partner_visible_products", { p_partner_id: partnerId });
+      return data as string[] | null;
     },
+    enabled: !!partnerId,
+  });
+
+  // Get category counts filtered by partner access
+  const { data: accessCounts } = useQuery({
+    queryKey: ["partner-category-counts", partnerId],
+    queryFn: async () => {
+      if (!partnerId) return null;
+      const { data } = await supabase.rpc("get_category_counts_for_partner", { p_partner_id: partnerId });
+      return data as { family: string; category: string; product_count: number }[] | null;
+    },
+    enabled: !!partnerId,
   });
 
   const families = useMemo(() => {
     const map = new Map<string, Set<string>>();
-    allProducts.forEach((p) => {
+    const source = accessCounts || [];
+    source.forEach((p) => {
       if (!p.family) return;
       if (!map.has(p.family)) map.set(p.family, new Set());
       if (p.category) map.get(p.family)!.add(p.category);
     });
     return map;
-  }, [allProducts]);
+  }, [accessCounts]);
 
   const familyNames = useMemo(() => Array.from(families.keys()).sort(), [families]);
   const categories = useMemo(() => {
@@ -88,9 +103,17 @@ export default function PortalProducts() {
   const {
     data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading,
   } = useInfiniteQuery({
-    queryKey: ["products-grid", debouncedSearch, selectedFamily, selectedCategory, favouritesOnly, sort, favouriteIds],
+    queryKey: ["products-grid", debouncedSearch, selectedFamily, selectedCategory, favouritesOnly, sort, favouriteIds, allowedIds],
     queryFn: async ({ pageParam = 0 }) => {
+      // If access rules exist but nothing allowed, return empty
+      if (allowedIds && allowedIds.length === 0) {
+        return { rows: [], count: 0, page: pageParam };
+      }
       let query = supabase.from("products_partner_view").select("*", { count: "exact" });
+      // Filter by partner access rules
+      if (allowedIds && allowedIds.length > 0) {
+        query = query.in("id", allowedIds);
+      }
       if (selectedFamily) query = query.eq("family", selectedFamily);
       if (selectedCategory) query = query.eq("category", selectedCategory);
       if (debouncedSearch) query = query.or(`name.ilike.%${debouncedSearch}%,sku.ilike.%${debouncedSearch}%`);
