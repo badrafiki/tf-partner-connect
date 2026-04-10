@@ -73,6 +73,19 @@ export default function PortalProducts() {
     return Array.from(families.get(selectedFamily) || []).sort();
   }, [selectedFamily, families]);
 
+  // Favourites
+  const { data: favouriteIds = [] } = useQuery({
+    queryKey: ["favourites"],
+    queryFn: async () => {
+      if (!user) return [];
+      const { data } = await supabase.from("partner_favourites").select("product_id").eq("user_id", user.id);
+      return (data || []).map((f) => f.product_id);
+    },
+    enabled: !!user,
+  });
+
+  const favourites = useMemo(() => new Set(favouriteIds), [favouriteIds]);
+
   // Server-side paginated products
   const sortCol = sort === "price-low" || sort === "price-high" ? "list_price_usd" : sort === "stock-first" ? "stock_qty" : "name";
   const sortAsc = sort === "name-asc" || sort === "price-low";
@@ -90,6 +103,7 @@ export default function PortalProducts() {
       if (selectedCategory) query = query.eq("category", selectedCategory);
       if (debouncedSearch) query = query.or(`name.ilike.%${debouncedSearch}%,sku.ilike.%${debouncedSearch}%`);
       if (favouritesOnly && favouriteIds.length > 0) query = query.in("id", favouriteIds);
+      if (favouritesOnly && favouriteIds.length === 0) query = query.eq("id", "00000000-0000-0000-0000-000000000000");
 
       query = query
         .order(sortCol, { ascending: sortAsc })
@@ -109,19 +123,6 @@ export default function PortalProducts() {
   const products = data?.pages.flatMap((p) => p.rows) || [];
   const totalCount = data?.pages[0]?.count || 0;
   const remaining = totalCount - products.length;
-
-  // Favourites
-  const { data: favouriteIds = [] } = useQuery({
-    queryKey: ["favourites"],
-    queryFn: async () => {
-      if (!user) return [];
-      const { data } = await supabase.from("partner_favourites").select("product_id").eq("user_id", user.id);
-      return (data || []).map((f) => f.product_id);
-    },
-    enabled: !!user,
-  });
-
-  const favourites = useMemo(() => new Set(favouriteIds), [favouriteIds]);
 
   const toggleFavMutation = useMutation({
     mutationFn: async (productId: string) => {
