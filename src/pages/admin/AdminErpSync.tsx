@@ -13,7 +13,7 @@ import {
 import {
   Collapsible, CollapsibleContent, CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { RefreshCw, Copy, ArrowRight, CheckCircle2, XCircle, Clock, ChevronDown, Loader2, AlertCircle, Users, Package } from "lucide-react";
+import { RefreshCw, Copy, ArrowRight, CheckCircle2, XCircle, Clock, ChevronDown, Loader2, AlertCircle, Users, Package, ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
 import { formatDistanceToNow, format } from "date-fns";
 import type { Tables } from "@/integrations/supabase/types";
@@ -22,16 +22,15 @@ type Partner = Tables<"partners">;
 
 export default function AdminErpSync() {
   const [pulling, setPulling] = useState(false);
+  const [syncingProducts, setSyncingProducts] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [connectionStatus, setConnectionStatus] = useState<"checking" | "connected" | "error">("checking");
   const [syncingAll, setSyncingAll] = useState(false);
   const [syncProgress, setSyncProgress] = useState({ current: 0, total: 0 });
   const [unsyncedOpen, setUnsyncedOpen] = useState(false);
+  const [productErrorsOpen, setProductErrorsOpen] = useState(false);
 
-  // Check connection status
-  useEffect(() => {
-    setConnectionStatus("connected");
-  }, []);
+  useEffect(() => { setConnectionStatus("connected"); }, []);
 
   // Fetch sync log
   const { data: syncLog, refetch: refetchLog } = useQuery({
@@ -42,11 +41,7 @@ export default function AdminErpSync() {
         .select("*")
         .order("created_at", { ascending: false })
         .limit(50);
-
-      if (statusFilter !== "all") {
-        query = query.eq("status", statusFilter);
-      }
-
+      if (statusFilter !== "all") query = query.eq("status", statusFilter);
       const { data, error } = await query;
       if (error) throw error;
       return data;
@@ -54,7 +49,7 @@ export default function AdminErpSync() {
     refetchInterval: 30000,
   });
 
-  // Get last successful stock sync
+  // Last stock sync
   const { data: lastSync, refetch: refetchLastSync } = useQuery({
     queryKey: ["last-stock-sync"],
     queryFn: async () => {
@@ -87,7 +82,51 @@ export default function AdminErpSync() {
     },
   });
 
-  // Fetch partners for customer sync section
+  // Last product sync
+  const { data: lastProductSync, refetch: refetchLastProductSync } = useQuery({
+    queryKey: ["last-product-sync"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("erp_sync_log")
+        .select("*")
+        .eq("event_type", "product_sync")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  // Product stats
+  const { data: productStats, refetch: refetchProductStats } = useQuery({
+    queryKey: ["erp-product-stats"],
+    queryFn: async () => {
+      const { count: total } = await supabase
+        .from("products")
+        .select("*", { count: "exact", head: true });
+      const { count: linked } = await supabase
+        .from("products")
+        .select("*", { count: "exact", head: true })
+        .not("modusys_product_id", "is", null);
+      const { count: manual } = await supabase
+        .from("products")
+        .select("*", { count: "exact", head: true })
+        .is("modusys_product_id", null);
+      const { count: hidden } = await supabase
+        .from("products")
+        .select("*", { count: "exact", head: true })
+        .eq("hidden", true);
+      return {
+        total: total ?? 0,
+        linked: linked ?? 0,
+        manual: manual ?? 0,
+        hidden: hidden ?? 0,
+      };
+    },
+  });
+
+  // Partners
   const { data: partners = [], refetch: refetchPartners } = useQuery({
     queryKey: ["erp-partners-sync"],
     queryFn: async () => {
@@ -100,20 +139,17 @@ export default function AdminErpSync() {
   const syncedCount = partners.filter(p => p.modusys_customer_id).length;
   const unsyncedPartners = partners.filter(p => !p.modusys_customer_id);
 
-  // Order sync stats
+  // Order stats
   const { data: orderStats } = useQuery({
     queryKey: ["erp-order-stats"],
     queryFn: async () => {
       const { count: totalOrders } = await supabase
-        .from("orders")
-        .select("*", { count: "exact", head: true });
+        .from("orders").select("*", { count: "exact", head: true });
       const { count: syncedOrders } = await supabase
-        .from("orders")
-        .select("*", { count: "exact", head: true })
+        .from("orders").select("*", { count: "exact", head: true })
         .not("modusys_order_id", "is", null);
       const { count: unsyncedOrders } = await supabase
-        .from("orders")
-        .select("*", { count: "exact", head: true })
+        .from("orders").select("*", { count: "exact", head: true })
         .is("modusys_order_id", null);
       const { data: lastOrderEvent } = await supabase
         .from("erp_sync_log")
@@ -142,22 +178,38 @@ export default function AdminErpSync() {
   const handlePullStock = async () => {
     setPulling(true);
     try {
-      const { data, error } = await supabase.functions.invoke("pull-stock-from-modusys", {
-        method: "POST",
-      });
+      const { data, error } = await supabase.functions.invoke("pull-stock-from-modusys", { method: "POST" });
       if (error) throw error;
       if (data?.error) {
         toast.error(`Stock pull failed: ${data.error}`);
       } else {
         toast.success(`Updated ${data.updated} products`);
       }
-      refetchLog();
-      refetchLastSync();
-      refetchLastPull();
+      refetchLog(); refetchLastSync(); refetchLastPull();
     } catch (err: any) {
       toast.error(err.message || "Failed to pull stock");
     } finally {
       setPulling(false);
+    }
+  };
+
+  const handleSyncProducts = async () => {
+    setSyncingProducts(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("pull-products-from-modusys", { method: "POST" });
+      if (error) throw error;
+      if (data?.error) {
+        toast.error(`Product sync failed: ${data.error}`);
+      } else {
+        const upserted = data?.upserted ?? 0;
+        const hidden = data?.hidden ?? 0;
+        toast.success(`Synced ${upserted} products, hidden ${hidden}`);
+      }
+      refetchLog(); refetchLastProductSync(); refetchProductStats();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to sync products");
+    } finally {
+      setSyncingProducts(false);
     }
   };
 
@@ -172,8 +224,7 @@ export default function AdminErpSync() {
       } else {
         toast.success("Customer synced to ModuSys");
       }
-      refetchPartners();
-      refetchLog();
+      refetchPartners(); refetchLog();
     } catch (err: any) {
       toast.error(err.message || "Sync failed");
     }
@@ -183,7 +234,6 @@ export default function AdminErpSync() {
     if (unsyncedPartners.length === 0) return;
     setSyncingAll(true);
     setSyncProgress({ current: 0, total: unsyncedPartners.length });
-
     for (let i = 0; i < unsyncedPartners.length; i++) {
       setSyncProgress({ current: i + 1, total: unsyncedPartners.length });
       try {
@@ -194,15 +244,12 @@ export default function AdminErpSync() {
         console.error(`Failed to sync ${unsyncedPartners[i].company_name}:`, e);
       }
     }
-
     toast.success(`Sync complete — processed ${unsyncedPartners.length} partners`);
     setSyncingAll(false);
-    refetchPartners();
-    refetchLog();
+    refetchPartners(); refetchLog();
   };
 
   const webhookUrl = `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co/functions/v1/sync-stock`;
-
   const copyWebhookUrl = () => {
     navigator.clipboard.writeText(webhookUrl);
     toast.success("Webhook URL copied to clipboard");
@@ -212,6 +259,7 @@ export default function AdminErpSync() {
     const map: Record<string, string> = {
       stock_sync: "Stock sync",
       stock_sync_pull: "Stock pull",
+      product_sync: "Product sync",
       customer_created: "Customer created",
       customer_updated: "Customer updated",
       quote_created: "Quote created",
@@ -228,6 +276,10 @@ export default function AdminErpSync() {
     if (payload.items_received !== undefined) return payload.items_received;
     return "—";
   };
+
+  // Extract product sync errors from last sync log
+  const productSyncPayload = lastProductSync?.payload as any;
+  const productSyncErrors: { sku: string; error: string }[] = productSyncPayload?.errors ?? [];
 
   return (
     <div className="space-y-6">
@@ -270,26 +322,15 @@ export default function AdminErpSync() {
               </div>
             </div>
             {unsyncedPartners.length > 0 && (
-              <Button
-                onClick={handleSyncAll}
-                disabled={syncingAll}
-                className="bg-[#1B3A6B] hover:bg-[#15305a]"
-              >
+              <Button onClick={handleSyncAll} disabled={syncingAll} className="bg-[#1B3A6B] hover:bg-[#15305a]">
                 {syncingAll ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Syncing {syncProgress.current} of {syncProgress.total}…
-                  </>
+                  <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Syncing {syncProgress.current} of {syncProgress.total}…</>
                 ) : (
-                  <>
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                    Sync all unsynced
-                  </>
+                  <><RefreshCw className="h-4 w-4 mr-2" />Sync all unsynced</>
                 )}
               </Button>
             )}
           </div>
-
           {unsyncedPartners.length > 0 && (
             <Collapsible open={unsyncedOpen} onOpenChange={setUnsyncedOpen}>
               <CollapsibleTrigger asChild>
@@ -311,6 +352,99 @@ export default function AdminErpSync() {
                     <TableBody>
                       {unsyncedPartners.map(p => (
                         <UnsyncedPartnerRow key={p.id} partner={p} onSync={() => handleSyncOne(p.id)} />
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Product Sync */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Package className="h-5 w-5" />
+            Product Sync
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="bg-muted rounded-md p-3">
+              <div className="text-sm text-muted-foreground">Total products</div>
+              <div className="text-xl font-bold">{productStats?.total ?? 0}</div>
+            </div>
+            <div className="bg-green-50 border border-green-200 rounded-md p-3">
+              <div className="text-sm text-muted-foreground">Linked to ModuSys</div>
+              <div className="text-xl font-bold text-green-700">{productStats?.linked ?? 0}</div>
+            </div>
+            <div className={`rounded-md p-3 border ${(productStats?.manual ?? 0) > 0 ? "bg-amber-50 border-amber-200" : "bg-muted border-border"}`}>
+              <div className="text-sm text-muted-foreground">Manual (legacy)</div>
+              <div className="flex items-center gap-2">
+                <span className={`text-xl font-bold ${(productStats?.manual ?? 0) > 0 ? "text-amber-700" : "text-muted-foreground"}`}>
+                  {productStats?.manual ?? 0}
+                </span>
+                {(productStats?.manual ?? 0) > 0 && (
+                  <Badge className="bg-amber-100 text-amber-800 text-xs">Legacy</Badge>
+                )}
+              </div>
+            </div>
+            <div className="bg-muted rounded-md p-3">
+              <div className="text-sm text-muted-foreground">Hidden</div>
+              <div className="text-xl font-bold">{productStats?.hidden ?? 0}</div>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            <div className="space-y-1 flex-1">
+              <div className="text-sm text-muted-foreground">Last synced</div>
+              <div className="text-sm font-medium">
+                {lastProductSync?.created_at
+                  ? `${formatDistanceToNow(new Date(lastProductSync.created_at))} ago`
+                  : "Never"}
+              </div>
+            </div>
+            {productSyncPayload && (
+              <div className="space-y-1 flex-1">
+                <div className="text-sm text-muted-foreground">Last sync result</div>
+                <div className="text-sm font-medium">
+                  {productSyncPayload.upserted ?? 0} upserted, {productSyncPayload.hidden ?? 0} hidden
+                </div>
+              </div>
+            )}
+            <Button onClick={handleSyncProducts} disabled={syncingProducts} className="bg-[#1B3A6B] hover:bg-[#15305a]">
+              <RefreshCw className={`h-4 w-4 mr-2 ${syncingProducts ? "animate-spin" : ""}`} />
+              {syncingProducts ? "Syncing..." : "Sync products now"}
+            </Button>
+          </div>
+
+          {/* SKU mismatch warnings */}
+          {productSyncErrors.length > 0 && (
+            <Collapsible open={productErrorsOpen} onOpenChange={setProductErrorsOpen}>
+              <CollapsibleTrigger asChild>
+                <Button variant="ghost" size="sm" className="text-amber-700">
+                  <AlertCircle className="h-4 w-4 mr-1" />
+                  {productSyncErrors.length} product{productSyncErrors.length > 1 ? "s" : ""} had sync errors
+                  <ChevronDown className={`h-4 w-4 ml-1 transition-transform ${productErrorsOpen ? "rotate-180" : ""}`} />
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <div className="rounded-md border mt-2 bg-amber-50">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>SKU</TableHead>
+                        <TableHead>Error</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {productSyncErrors.map((e, i) => (
+                        <TableRow key={i}>
+                          <TableCell className="font-mono text-sm">{e.sku}</TableCell>
+                          <TableCell className="text-sm text-red-700">{e.error}</TableCell>
+                        </TableRow>
                       ))}
                     </TableBody>
                   </Table>
@@ -352,7 +486,7 @@ export default function AdminErpSync() {
       <Card>
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
-            <Package className="h-5 w-5" />
+            <ShoppingCart className="h-5 w-5" />
             Order Sync
           </CardTitle>
         </CardHeader>
@@ -499,13 +633,11 @@ export default function AdminErpSync() {
 /* ───── Unsynced Partner Row ───── */
 function UnsyncedPartnerRow({ partner, onSync }: { partner: Partner; onSync: () => void }) {
   const [syncing, setSyncing] = useState(false);
-
   const handleSync = async () => {
     setSyncing(true);
     await onSync();
     setSyncing(false);
   };
-
   return (
     <TableRow>
       <TableCell className="text-sm font-medium">{partner.company_name}</TableCell>
