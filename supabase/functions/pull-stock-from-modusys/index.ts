@@ -87,35 +87,38 @@ Deno.serve(async (req) => {
       );
     }
 
-    const result = await stockResponse.json();
-    const items: Array<{ sku: string; total_quantity: number }> = result.items || [];
+    // ModuSys push-all-stock pushes directly to our sync-stock endpoint.
+    // The actual updates happen there. We just need to read the result from
+    // the most recent sync-stock log entry to report back to the admin UI.
+    const modusysResult = await stockResponse.json();
 
-    // Update portal products by SKU match
-    let updated = 0;
-    for (const item of items) {
-      const { sku, total_quantity } = item;
-      if (!sku || typeof total_quantity !== "number") continue;
+    // Small delay to let sync-stock finish logging
+    await new Promise((r) => setTimeout(r, 1000));
 
-      const { data } = await adminClient
-        .from("products")
-        .update({ stock_qty: total_quantity, updated_at: new Date().toISOString() })
-        .eq("sku", sku)
-        .select("id")
-        .maybeSingle();
+    // Read the latest sync-stock log to get actual results
+    const { data: latestSync } = await adminClient
+      .from("erp_sync_log")
+      .select("payload")
+      .eq("event_type", "stock_sync")
+      .eq("status", "success")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
 
-      if (data) updated++;
-    }
+    const updated = latestSync?.payload?.updated ?? 0;
+    const notFound = latestSync?.payload?.not_found ?? 0;
+    const itemsReceived = latestSync?.payload?.items?.length ?? 0;
 
     await adminClient.from("erp_sync_log").insert({
       event_type: "stock_sync_pull",
       direction: "modusys_to_portal",
       entity_type: "product",
       status: "success",
-      payload: { items_received: items.length, updated },
+      payload: { items_received: itemsReceived, updated, not_found: notFound },
     });
 
     return new Response(
-      JSON.stringify({ updated, timestamp: new Date().toISOString() }),
+      JSON.stringify({ updated, not_found: notFound, items_received: itemsReceived, timestamp: new Date().toISOString() }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {
