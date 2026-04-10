@@ -254,6 +254,7 @@ function DistributorDetailSheet({
 }) {
   const [editing, setEditing] = useState(false);
   const [resetLink, setResetLink] = useState<string | null>(null);
+  const [emailModalOpen, setEmailModalOpen] = useState(false);
   const queryClient = useQueryClient();
 
   // Fetch enquiry stats
