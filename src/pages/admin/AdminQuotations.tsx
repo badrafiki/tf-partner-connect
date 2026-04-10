@@ -323,7 +323,7 @@ function QuotationManageSheet({ quotation, partner, enquiry, onUpdated }: {
   const handlePdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const path = `${quotation.id}/${file.name}`;
+    const path = `${quotation.partner_id}/${quotation.id}_${file.name}`;
     const { error: uploadError } = await supabase.storage
       .from("quotation-pdfs")
       .upload(path, file, { upsert: true });
