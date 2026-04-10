@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
+import { analytics } from "@/lib/analytics";
 
 export interface BasketItem {
   product_id: string;
@@ -53,7 +54,11 @@ export function BasketProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const removeItem = useCallback((productId: string) => {
-    setItems((prev) => prev.filter((i) => i.product_id !== productId));
+    setItems((prev) => {
+      const item = prev.find((i) => i.product_id === productId);
+      if (item) analytics.removeFromBasket(item.sku, item.name);
+      return prev.filter((i) => i.product_id !== productId);
+    });
   }, []);
 
   const updateQuantity = useCallback((productId: string, quantity: number) => {
