@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Search, Plus, Pencil, ToggleLeft, ToggleRight, Users, CheckCircle2, AlertCircle, RefreshCw, Loader2 } from "lucide-react";
+import { Search, Plus, Pencil, ToggleLeft, ToggleRight, Users, CheckCircle2, AlertCircle, RefreshCw, Loader2, Mail } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
