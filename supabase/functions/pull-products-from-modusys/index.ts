@@ -14,9 +14,8 @@ Deno.serve(async (req) => {
   try {
     const authHeader = req.headers.get("Authorization") ?? "";
     const integrationSecret = req.headers.get("x-integration-secret");
-    const cronSecret = req.headers.get("x-cron-secret");
     const expectedSecret = Deno.env.get("INTEGRATION_SECRET");
-    const isCronCall = !!(integrationSecret && integrationSecret === expectedSecret) || cronSecret === "true";
+    const isCronCall = !!(integrationSecret && expectedSecret && integrationSecret === expectedSecret);
 
     if (!isCronCall) {
       // Normal admin auth check
