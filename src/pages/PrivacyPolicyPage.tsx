@@ -69,7 +69,7 @@ To exercise any of these rights, contact us at partners@total-filtration.com.`,
   },
   {
     title: "8. Cookies",
-    content: `The partner portal uses essential cookies only for authentication and session management. We do not use tracking or advertising cookies.`,
+    content: `The partner portal uses essential cookies for authentication and session management, and Google Analytics 4 (GA4) to understand how partners use the portal. GA4 collects anonymised usage data including pages visited, features used and session duration. No personally identifiable information is sent to Google Analytics. You can opt out of Google Analytics tracking using the Google Analytics Opt-out Browser Add-on available at tools.google.com/dlpage/gaoptout.`,
   },
   {
     title: "9. Changes to This Policy",
