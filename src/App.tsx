@@ -34,6 +34,7 @@ import AdminQuotations from "@/pages/admin/AdminQuotations";
 import AdminErpSync from "@/pages/admin/AdminErpSync";
 
 import NotFound from "@/pages/NotFound";
+import { RouteTracker } from "@/components/analytics/RouteTracker";
 
 const queryClient = new QueryClient();
 
@@ -43,6 +44,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <RouteTracker />
         <AuthProvider>
           <BasketProvider>
           <Routes>

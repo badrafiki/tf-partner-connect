@@ -9,6 +9,7 @@ import { SITE_URL } from "@/constants";
 
 import { supabase } from "@/integrations/supabase/client";
 import { applicationSchema, type ApplicationFormValues } from "@/lib/application-schema";
+import { analytics } from "@/lib/analytics";
 import { US_STATES, CA_PROVINCES } from "@/lib/us-states";
 
 import { Input } from "@/components/ui/input";
@@ -208,6 +209,7 @@ export default function ApplicationPage() {
     setContactEmailDisplay(data.contact_email);
     setSubmitted(true);
     setSubmitting(false);
+    analytics.applicationSubmitted();
   };
 
   const onError = () => {

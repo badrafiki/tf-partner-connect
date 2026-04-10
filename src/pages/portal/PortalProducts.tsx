@@ -11,6 +11,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useInfiniteQuery, useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useBasket } from "@/contexts/BasketContext";
+import { analytics } from "@/lib/analytics";
 
 type SortKey = "name-asc" | "price-low" | "price-high" | "stock-first";
 const PAGE_SIZE = 24;
@@ -45,6 +46,7 @@ export default function PortalProducts() {
     const t = setTimeout(() => setDebouncedSearch(searchInput), 300);
     return () => clearTimeout(t);
   }, [searchInput]);
+
 
   // Get allowed product IDs for this partner
   const { data: allowedIds } = useQuery({
@@ -135,6 +137,13 @@ export default function PortalProducts() {
   const totalCount = data?.pages[0]?.count || 0;
   const remaining = totalCount - products.length;
 
+  // Track search after results load
+  useEffect(() => {
+    if (debouncedSearch && totalCount > 0) {
+      analytics.productSearched(debouncedSearch, totalCount);
+    }
+  }, [debouncedSearch, totalCount]);
+
   const toggleFavMutation = useMutation({
     mutationFn: async (productId: string) => {
       if (!user) return;
@@ -165,6 +174,7 @@ export default function PortalProducts() {
 
   const handleAdd = useCallback((p: any) => {
     const qty = quantities[p.id] || 1;
+    const partnerPrice = (p.list_price_usd ?? 0) * (1 - discount);
     addItem({
       product_id: p.id,
       sku: p.sku ?? "",
@@ -172,12 +182,13 @@ export default function PortalProducts() {
       category: p.category,
       list_price_usd: p.list_price_usd ?? 0,
     }, qty);
+    analytics.addToBasket(p.sku ?? "", p.name ?? "", partnerPrice);
     setAddedItems((prev) => new Set(prev).add(p.id));
     setAddingCard(null);
     setQuantities((prev) => ({ ...prev, [p.id]: 1 }));
     toast.success("Added to basket");
     setTimeout(() => setAddedItems((prev) => { const n = new Set(prev); n.delete(p.id); return n; }), 1500);
-  }, [addItem, quantities]);
+  }, [addItem, quantities, discount]);
 
   const getQty = (id: string) => quantities[id] || 1;
   const setQty = (id: string, v: number) => setQuantities((prev) => ({ ...prev, [id]: Math.max(1, v) }));
@@ -229,7 +240,7 @@ export default function PortalProducts() {
         {familyNames.map((f) => (
           <button
             key={f}
-            onClick={() => { setSelectedFamily(f); setSelectedCategory(null); }}
+            onClick={() => { setSelectedFamily(f); setSelectedCategory(null); analytics.familyFilterApplied(f); }}
             className={`shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all ${
               selectedFamily === f
                 ? "bg-primary text-primary-foreground shadow-sm"
@@ -305,7 +316,7 @@ export default function PortalProducts() {
                 >
                   <div className="p-4 pb-2 flex items-start justify-between">
                     <span className="font-mono text-[11px] text-muted-foreground/60">{p.sku}</span>
-                    <button onClick={() => toggleFavMutation.mutate(p.id!)} className="absolute top-4 right-4" aria-label={favourites.has(p.id!) ? "Remove from favourites" : "Add to favourites"}>
+                    <button onClick={() => { toggleFavMutation.mutate(p.id!); analytics.productFavourited(p.sku ?? "", favourites.has(p.id!) ? "removed" : "added"); }} className="absolute top-4 right-4" aria-label={favourites.has(p.id!) ? "Remove from favourites" : "Add to favourites"}>
                       <Heart className={`h-5 w-5 transition-colors ${
                         favourites.has(p.id!) ? "fill-accent text-accent" : "text-muted-foreground/40 hover:text-accent"
                       }`} />

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { useAuth } from "@/contexts/AuthContext";
+import { analytics } from "@/lib/analytics";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -27,7 +28,10 @@ export default function LoginPage() {
   }
 
   if (user && role === "admin") return <Navigate to="/admin" replace />;
-  if (user && role === "partner") return <Navigate to="/portal" replace />;
+  if (user && role === "partner") {
+    analytics.partnerLoggedIn("partner");
+    return <Navigate to="/portal" replace />;
+  }
   if (user && !role) return <Navigate to="/pending" replace />;
 
   const handleSubmit = async (e: React.FormEvent) => {

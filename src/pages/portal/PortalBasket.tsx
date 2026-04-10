@@ -9,6 +9,7 @@ import { useBasket } from "@/contexts/BasketContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { analytics } from "@/lib/analytics";
 
 function formatUSD(n: number) {
   return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(n);
@@ -156,6 +157,7 @@ export default function PortalBasket() {
       if (data?.error) throw new Error(data.error);
 
       clearBasket();
+      analytics.enquirySubmitted(partnerTotal, itemCount);
       navigate("/portal/basket/submitted", {
         state: { enquiryId: data.enquiry_id },
       });

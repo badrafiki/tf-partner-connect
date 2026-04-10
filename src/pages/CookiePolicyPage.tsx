@@ -15,8 +15,8 @@ export default function CookiePolicyPage() {
 
         <h2>How the TF USA Partner Portal uses cookies</h2>
         <p>
-          The TF USA Partner Portal uses essential cookies only. We do not use advertising cookies, tracking cookies,
-          or any third-party analytics cookies.
+          The TF USA Partner Portal uses essential cookies and Google Analytics 4 (GA4) for anonymised usage tracking.
+          We do not use advertising cookies or third-party tracking pixels.
         </p>
 
         <div className="overflow-x-auto">
@@ -42,6 +42,12 @@ export default function CookiePolicyPage() {
                 <td>Essential</td>
                 <td>1 year</td>
               </tr>
+              <tr>
+                <td><code>_ga</code>, <code>_ga_R89CK2XKQZ</code></td>
+                <td>Google Analytics — tracks anonymised usage</td>
+                <td>Analytics</td>
+                <td>2 years</td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -59,8 +65,13 @@ export default function CookiePolicyPage() {
 
         <h2>Third-party cookies</h2>
         <p>
-          The TF USA Partner Portal does not use Google Analytics, advertising networks, social media pixels or any other
-          third-party tracking technology. No third-party cookies are set.
+          The TF USA Partner Portal uses Google Analytics 4 (GA4) to collect anonymised usage data such as pages visited,
+          features used and session duration. No personally identifiable information is sent to Google Analytics.
+          You can opt out of Google Analytics tracking using the{" "}
+          <a href="https://tools.google.com/dlpage/gaoptout" target="_blank" rel="noopener noreferrer">
+            Google Analytics Opt-out Browser Add-on
+          </a>.
+          No advertising networks, social media pixels or other third-party tracking technology is used.
         </p>
 
         <h2>Your choices</h2>
