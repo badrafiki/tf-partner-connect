@@ -146,7 +146,7 @@ export function PartnerLayout() {
               {/* Notification Bell */}
               <Popover open={bellOpen} onOpenChange={setBellOpen}>
                 <PopoverTrigger asChild>
-                  <Button variant="ghost" size="icon" className="text-white/70 hover:text-white hover:bg-white/10 relative">
+                  <Button variant="ghost" size="icon" className="text-white/70 hover:text-white hover:bg-white/10 relative" aria-label="View notifications">
                     <Bell className="h-5 w-5" />
                     {unreadCount > 0 && (
                       <span className="absolute -top-0.5 -right-0.5 bg-accent text-accent-foreground text-[10px] font-bold rounded-full h-[18px] min-w-[18px] px-1 flex items-center justify-center">
@@ -199,7 +199,7 @@ export function PartnerLayout() {
               {/* Account dropdown (desktop) */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="hidden lg:flex text-white/70 hover:text-white hover:bg-white/10 gap-2 px-2">
+                  <Button variant="ghost" className="hidden lg:flex text-white/70 hover:text-white hover:bg-white/10 gap-2 px-2" aria-label="Account menu">
                     <span className="flex items-center justify-center h-7 w-7 rounded-full bg-white/20 text-white text-xs font-bold">
                       {initials}
                     </span>
@@ -219,7 +219,7 @@ export function PartnerLayout() {
               {/* Mobile hamburger */}
               <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" className="lg:hidden text-white/70 hover:text-white hover:bg-white/10">
+                  <Button variant="ghost" size="icon" className="lg:hidden text-white/70 hover:text-white hover:bg-white/10" aria-label="Open navigation menu">
                     <Menu className="h-5 w-5" />
                   </Button>
                 </SheetTrigger>
@@ -303,6 +303,7 @@ export function PartnerLayout() {
               <div className="space-y-1.5 text-[13px]">
                 <Link to="/privacy" className="block text-muted-foreground hover:text-primary">Privacy Policy</Link>
                 <Link to="/terms" className="block text-muted-foreground hover:text-primary">Terms & Conditions</Link>
+                <Link to="/cookies" className="block text-muted-foreground hover:text-primary">Cookie Policy</Link>
                 <a href="https://total-filtration.com" target="_blank" rel="noopener noreferrer" className="block text-muted-foreground hover:text-primary">
                   total-filtration.com
                 </a>

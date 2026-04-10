@@ -305,7 +305,7 @@ export default function PortalProducts() {
                 >
                   <div className="p-4 pb-2 flex items-start justify-between">
                     <span className="font-mono text-[11px] text-muted-foreground/60">{p.sku}</span>
-                    <button onClick={() => toggleFavMutation.mutate(p.id!)} className="absolute top-4 right-4">
+                    <button onClick={() => toggleFavMutation.mutate(p.id!)} className="absolute top-4 right-4" aria-label={favourites.has(p.id!) ? "Remove from favourites" : "Add to favourites"}>
                       <Heart className={`h-5 w-5 transition-colors ${
                         favourites.has(p.id!) ? "fill-accent text-accent" : "text-muted-foreground/40 hover:text-accent"
                       }`} />
