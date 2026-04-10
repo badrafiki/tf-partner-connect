@@ -186,6 +186,19 @@ Deno.serve(async (req) => {
       );
     } else {
       const errorText = await response.text();
+
+      // If duplicate key error, treat as already existing — not a failure
+      if (errorText.includes("duplicate key") || errorText.includes("already exists")) {
+        return new Response(
+          JSON.stringify({ 
+            already_exists: true, 
+            message: "This quotation already exists in ModuSys",
+            modusys_quote_id: quotation.modusys_quote_id 
+          }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
       const errorMsg = `ModuSys returned ${response.status}: ${errorText.slice(0, 200)}`;
 
       await adminClient.from("erp_sync_log").insert({

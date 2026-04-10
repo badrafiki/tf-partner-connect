@@ -211,7 +211,9 @@ function ModuSysPushSection({ quotation, onUpdated }: { quotation: any; onUpdate
         body: { quotation_id: quotation.id },
       });
       if (error) throw error;
-      if (data?.error) {
+      if (data?.already_exists) {
+        toast.info("This quotation already exists in ModuSys");
+      } else if (data?.error) {
         toast.error(data.error);
       } else {
         toast.success("Pushed to ModuSys");
