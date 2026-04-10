@@ -71,9 +71,14 @@ function FieldError({ message }: { message?: string }) {
 function StateSelect({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
     <Select value={value} onValueChange={onChange}>
-      <SelectTrigger><SelectValue placeholder="Select state" /></SelectTrigger>
+      <SelectTrigger><SelectValue placeholder="Select state / province" /></SelectTrigger>
       <SelectContent>
+        <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">United States</div>
         {US_STATES.map((s) => (
+          <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+        ))}
+        <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider mt-1 border-t border-border pt-2">Canada</div>
+        {CA_PROVINCES.map((s) => (
           <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
         ))}
       </SelectContent>
@@ -288,7 +293,7 @@ export default function ApplicationPage() {
           Apply to become a TF USA distribution partner
         </h1>
         <p className="text-muted-foreground text-base mb-5">
-          Complete the form below. Our team reviews all applications within 3–5 business days.
+          Open to US and Canadian distribution partners. Complete the form below — our team reviews all applications within 3–5 business days.
         </p>
         <InfoBox>
           All information is kept strictly confidential and used solely for account setup and credit assessment.
@@ -325,8 +330,8 @@ export default function ApplicationPage() {
               <Input {...register("date_established")} placeholder="e.g. 2005" />
             </div>
             <div>
-              <Label>Federal Tax ID (EIN)</Label>
-              <Input {...register("ein")} />
+              <Label>Tax ID — EIN (US) or Business Number (Canada)</Label>
+              <Input {...register("ein")} placeholder="e.g. 12-3456789 or 123456789" />
             </div>
             <div>
               <Label>Years in Business</Label>
@@ -369,8 +374,8 @@ export default function ApplicationPage() {
               <Controller control={control} name="reg_address_state" render={({ field }) => <StateSelect value={field.value || ""} onChange={field.onChange} />} />
             </div>
             <div>
-              <Label>ZIP</Label>
-              <Input {...register("reg_address_zip")} />
+              <Label>ZIP / Postal Code</Label>
+              <Input {...register("reg_address_zip")} placeholder="e.g. 34787 or M5V 3A8" />
             </div>
           </FieldRow>
 
@@ -404,8 +409,8 @@ export default function ApplicationPage() {
                   <Controller control={control} name="primary_address_state" render={({ field }) => <StateSelect value={field.value || ""} onChange={field.onChange} />} />
                 </div>
                 <div>
-                  <Label>ZIP</Label>
-                  <Input {...register("primary_address_zip")} />
+              <Label>ZIP / Postal Code</Label>
+              <Input {...register("primary_address_zip")} placeholder="e.g. 34787 or M5V 3A8" />
                 </div>
               </FieldRow>
             </>
@@ -551,8 +556,8 @@ export default function ApplicationPage() {
                   <Controller control={control} name="ship_address_state" render={({ field }) => <StateSelect value={field.value || ""} onChange={field.onChange} />} />
                 </div>
                 <div>
-                  <Label>ZIP</Label>
-                  <Input {...register("ship_address_zip")} />
+              <Label>ZIP / Postal Code</Label>
+              <Input {...register("ship_address_zip")} placeholder="e.g. 34787 or M5V 3A8" />
                 </div>
               </FieldRow>
             </>
@@ -706,7 +711,7 @@ export default function ApplicationPage() {
           </div>
 
           <div className="mb-4">
-            <Label className="mb-2 block">Resale Certificate</Label>
+            <Label className="mb-2 block">Resale / Tax Exemption Certificate</Label>
             <Controller control={control} name="resale_certificate_status" render={({ field }) => (
               <RadioGroup value={field.value} onValueChange={field.onChange} className="flex flex-wrap gap-4">
                 {["Will attach", "Will provide within 10 days", "Not applicable"].map((v) => (
@@ -724,7 +729,7 @@ export default function ApplicationPage() {
           </FieldRow>
 
           <InfoBox>
-            Please email your W-9, resale certificate and business license to partners@total-filtration.com after submitting this form. Reference your company name in the subject line.
+            Please email your W-9 (US) or W-8BEN-E (Canada), along with any applicable resale or GST/HST exemption certificates and your business license to partners@total-filtration.com after submitting this form.
           </InfoBox>
         </SectionCard>
 
