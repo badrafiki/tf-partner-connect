@@ -41,7 +41,7 @@ function RequiredMark() {
 
 function InfoBox({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex items-start gap-2 rounded-md bg-blue-50 border border-blue-200 p-3 text-sm text-blue-800 mb-4">
+    <div className="flex items-start gap-2 rounded-md bg-blue-50 border-0 border-l-[3px] border-l-blue-400 p-3 text-sm text-blue-800 mb-4">
       <Info className="h-4 w-4 mt-0.5 shrink-0" />
       <span>{children}</span>
     </div>
@@ -267,9 +267,9 @@ export default function ApplicationPage() {
               }}
               className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-colors
                 ${sectionComplete[i]
-                  ? "bg-white text-primary"
+                  ? "bg-primary text-white border border-white/20"
                   : activeSection === i
-                    ? "bg-white/20 text-white border border-white/40"
+                    ? "bg-white text-primary border border-white"
                     : "bg-white/10 text-white/60"
                 }
               `}
@@ -790,11 +790,11 @@ export default function ApplicationPage() {
         </SectionCard>
 
         {/* Submit */}
-        <Button type="submit" disabled={submitting} className="w-full h-12 text-base font-semibold">
+        <Button type="submit" disabled={submitting} className="w-full h-12 text-base font-medium">
           {submitting ? (
             <span className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /> Submitting...</span>
           ) : (
-            "Submit Application"
+            "Submit Application →"
           )}
         </Button>
         <p className="text-xs text-muted-foreground text-center mt-3 mb-8">
@@ -803,6 +803,15 @@ export default function ApplicationPage() {
           <a href="/privacy" target="_blank" className="underline hover:text-foreground">Privacy Policy</a>.
         </p>
       </form>
+
+      {/* Footer */}
+      <footer className="text-center text-xs text-muted-foreground py-8">
+        © 2026 Total Filtration USA LLC{" "}
+        <span className="mx-1">|</span>{" "}
+        <Link to="/privacy" className="hover:text-foreground underline">Privacy Policy</Link>{" "}
+        <span className="mx-1">|</span>{" "}
+        <Link to="/terms" className="hover:text-foreground underline">Terms &amp; Conditions</Link>
+      </footer>
     </div>
   );
 }

@@ -61,7 +61,7 @@ export default function LoginPage() {
             Exclusive access for authorised TF USA distribution partners.
           </p>
         </div>
-        <p className="lg:absolute lg:bottom-6 lg:left-0 lg:right-0 text-center text-white/40 text-[13px] italic mt-8 lg:mt-0">
+        <p className="lg:absolute lg:bottom-6 lg:left-0 lg:right-0 text-center text-white/50 text-[13px] italic mt-8 lg:mt-0">
           Industrial Air & Coolant Filtration For U.S. Businesses
         </p>
       </div>
