@@ -128,8 +128,12 @@ Deno.serve(async (req) => {
     const modusysUrl = Deno.env.get("MODUSYS_SUPABASE_URL");
     const integrationSecret = Deno.env.get("INTEGRATION_SECRET");
 
+    const targetUrl = `${modusysUrl}/functions/v1/receive-quotation`;
+    console.log("Pushing quotation to ModuSys:", targetUrl);
+    console.log("Payload:", JSON.stringify(payload));
+
     const response = await fetch(
-      `${modusysUrl}/functions/v1/receive-quotation`,
+      targetUrl,
       {
         method: "POST",
         headers: {
@@ -139,6 +143,8 @@ Deno.serve(async (req) => {
         body: JSON.stringify(payload),
       }
     );
+
+    console.log("ModuSys response status:", response.status);
 
     if (response.ok) {
       const result = await response.json();
