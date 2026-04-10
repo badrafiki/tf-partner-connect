@@ -65,6 +65,14 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Skip test partners — these are portal-only and should not sync to ModuSys
+    if (partner.company_name?.toLowerCase().includes("test partner")) {
+      return new Response(
+        JSON.stringify({ skipped: true, reason: "Test partner — not synced to ModuSys" }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // If not synced yet, create instead
     if (!partner.modusys_customer_id) {
       const createUrl = `${supabaseUrl}/functions/v1/create-modusys-customer`;
