@@ -248,6 +248,10 @@ function ModuSysPushSection({ quotation, onUpdated }: { quotation: any; onUpdate
         <p className="text-xs text-muted-foreground italic">
           This quote will sync to Zoho Books as an estimate via ModuSys.
         </p>
+        <Button variant="outline" size="sm" onClick={handlePush} disabled={pushing} className="mt-2" style={{ color: "#1B3A6B", borderColor: "#1B3A6B" }}>
+          {pushing ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : null}
+          {pushing ? "Re-pushing..." : "Re-push to ModuSys"}
+        </Button>
       </div>
     );
   }
