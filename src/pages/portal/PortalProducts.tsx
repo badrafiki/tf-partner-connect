@@ -103,9 +103,17 @@ export default function PortalProducts() {
   const {
     data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading,
   } = useInfiniteQuery({
-    queryKey: ["products-grid", debouncedSearch, selectedFamily, selectedCategory, favouritesOnly, sort, favouriteIds],
+    queryKey: ["products-grid", debouncedSearch, selectedFamily, selectedCategory, favouritesOnly, sort, favouriteIds, allowedIds],
     queryFn: async ({ pageParam = 0 }) => {
+      // If access rules exist but nothing allowed, return empty
+      if (allowedIds && allowedIds.length === 0) {
+        return { rows: [], count: 0, page: pageParam };
+      }
       let query = supabase.from("products_partner_view").select("*", { count: "exact" });
+      // Filter by partner access rules
+      if (allowedIds && allowedIds.length > 0) {
+        query = query.in("id", allowedIds);
+      }
       if (selectedFamily) query = query.eq("family", selectedFamily);
       if (selectedCategory) query = query.eq("category", selectedCategory);
       if (debouncedSearch) query = query.or(`name.ilike.%${debouncedSearch}%,sku.ilike.%${debouncedSearch}%`);
