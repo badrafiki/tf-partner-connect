@@ -36,6 +36,11 @@ export default function PendingActivationPage() {
             Sign Out
           </Button>
         </div>
+        <div className="mt-6 flex gap-3 justify-center text-xs text-primary-foreground/50">
+          <a href="/privacy" className="hover:text-primary-foreground/80 underline">Privacy Policy</a>
+          <span>·</span>
+          <a href="/terms" className="hover:text-primary-foreground/80 underline">Terms & Conditions</a>
+        </div>
       </div>
     </div>
   );

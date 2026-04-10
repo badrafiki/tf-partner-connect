@@ -13,6 +13,8 @@ import LoginPage from "@/pages/LoginPage";
 import ResetPasswordPage from "@/pages/ResetPasswordPage";
 import ApplicationPage from "@/pages/ApplicationPage";
 import PendingActivationPage from "@/pages/PendingActivationPage";
+import PrivacyPolicyPage from "@/pages/PrivacyPolicyPage";
+import TermsPage from "@/pages/TermsPage";
 
 import PortalDashboard from "@/pages/portal/PortalDashboard";
 import PortalProducts from "@/pages/portal/PortalProducts";
@@ -49,6 +51,8 @@ const App = () => (
             <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/apply" element={<ApplicationPage />} />
             <Route path="/pending" element={<PendingActivationPage />} />
+            <Route path="/privacy" element={<PrivacyPolicyPage />} />
+            <Route path="/terms" element={<TermsPage />} />
 
             {/* Partner Portal */}
             <Route
