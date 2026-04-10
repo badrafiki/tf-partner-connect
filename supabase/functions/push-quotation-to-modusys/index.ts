@@ -106,6 +106,8 @@ Deno.serve(async (req) => {
     const randPart = Math.random().toString(36).substring(2, 6).toUpperCase();
     const quoteNumber = `QT-${datePart}-${randPart}`;
 
+    const termsAndConditions = `All prices are valid for 30 days from the quote date unless otherwise specified. Payment terms as per customer agreement. Delivery times are estimates and subject to confirmation.\n\nAll pricing is in USD unless otherwise specified, for our Canadian customers, your order may be subjected to GST/VAT, this is payable by the buyer.`;
+
     const payload = {
       modusys_customer_id: partner.modusys_customer_id,
       portal_quotation_id: quotation.id,
@@ -113,6 +115,7 @@ Deno.serve(async (req) => {
       expires_at: quotation.expires_at,
       discount_percent: partner.discount_percentage,
       notes: quotation.notes || "",
+      terms_and_conditions: termsAndConditions,
       currency: "USD",
       line_items: lineItems.map((item: any) => ({
         sku: item.sku,
