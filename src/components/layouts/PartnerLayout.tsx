@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useBasket } from "@/contexts/BasketContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Bell, Menu, ShoppingCart, User, LogOut, ChevronDown, Tag, Package, FileText } from "lucide-react";
+import { Bell, Menu, ShoppingCart, User, LogOut, ChevronDown, Tag, Package, FileText, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
@@ -15,6 +15,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import tfLogo from "@/assets/tf-usa-logo.svg";
 
 const navLinks = [
   { to: "/portal/dashboard", label: "Dashboard" },
@@ -23,12 +24,8 @@ const navLinks = [
   { to: "/portal/quotations", label: "Quotations" },
   { to: "/portal/orders", label: "Orders" },
   { to: "/portal/enquiries", label: "History" },
+  { to: "/portal/account", label: "Account" },
 ];
-
-const linkClass = ({ isActive }: { isActive: boolean }) =>
-  `px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-    isActive ? "bg-white/20 text-white" : "text-white/80 hover:text-white hover:bg-white/10"
-  }`;
 
 function relativeTime(dateStr: string) {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -56,7 +53,6 @@ export function PartnerLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [bellOpen, setBellOpen] = useState(false);
 
-  // Fetch unread notifications with 60s polling
   const { data: unreadNotifs = [] } = useQuery({
     queryKey: ["partner-notifications-unread", partnerId],
     queryFn: async () => {
@@ -90,36 +86,52 @@ export function PartnerLayout() {
     navigate("/login");
   };
 
+  const initials = (companyName || "P").split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       {/* Top Nav */}
-      <header className="bg-primary text-primary-foreground shadow-md">
+      <header className="bg-primary shadow-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            {/* Left: Logo + company */}
-            <div className="flex items-center gap-4">
-              <Link to="/portal/dashboard" className="flex items-center gap-2">
-                <span className="text-lg font-bold tracking-tight">TF USA</span>
-                {companyName && (
-                  <span className="hidden sm:inline text-sm font-light text-white/70">
-                    | {companyName}
-                  </span>
-                )}
+            {/* Left: Logo + divider + company */}
+            <div className="flex items-center">
+              <Link to="/portal/dashboard" className="flex items-center shrink-0">
+                <img
+                  src={tfLogo}
+                  alt="Total Filtration USA"
+                  className="h-9 brightness-0 invert"
+                />
               </Link>
+              <div className="hidden sm:block w-px h-6 bg-white/20 mx-4" />
+              {companyName && (
+                <span className="hidden sm:block text-sm font-medium text-white max-w-[200px] truncate">
+                  {companyName}
+                </span>
+              )}
             </div>
 
             {/* Centre: Nav links (desktop) */}
-            <nav className="hidden md:flex items-center gap-1">
+            <nav className="hidden lg:flex items-center gap-0.5">
               {navLinks.map((link) => (
-                <NavLink key={link.to} to={link.to} className={linkClass}>
+                <NavLink
+                  key={link.to}
+                  to={link.to}
+                  className={({ isActive }) =>
+                    `relative px-3 py-2 text-sm font-medium transition-colors ${
+                      isActive
+                        ? "text-white after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-accent"
+                        : "text-white/70 hover:text-white"
+                    }`
+                  }
+                >
                   {link.label === "Basket" ? (
-                    <span className="flex items-center gap-1">
-                      <ShoppingCart className="h-4 w-4" />
+                    <span className="flex items-center gap-1 relative">
                       {link.label}
                       {itemCount > 0 && (
-                        <Badge className="bg-accent text-accent-foreground text-xs px-1.5 py-0 ml-1">
+                        <span className="absolute -top-2 -right-4 bg-accent text-accent-foreground text-[10px] font-bold rounded-full h-[18px] w-[18px] flex items-center justify-center">
                           {itemCount}
-                        </Badge>
+                        </span>
                       )}
                     </span>
                   ) : (
@@ -130,22 +142,22 @@ export function PartnerLayout() {
             </nav>
 
             {/* Right: Bell + account */}
-            <div className="flex items-center gap-2">
-              {/* Notification Bell Popover */}
+            <div className="flex items-center gap-1">
+              {/* Notification Bell */}
               <Popover open={bellOpen} onOpenChange={setBellOpen}>
                 <PopoverTrigger asChild>
-                  <Button variant="ghost" size="icon" className="text-white/80 hover:text-white hover:bg-white/10 relative">
+                  <Button variant="ghost" size="icon" className="text-white/70 hover:text-white hover:bg-white/10 relative">
                     <Bell className="h-5 w-5" />
                     {unreadCount > 0 && (
-                      <Badge className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-xs px-1 py-0 min-w-[18px] h-[18px] flex items-center justify-center">
+                      <span className="absolute -top-0.5 -right-0.5 bg-accent text-accent-foreground text-[10px] font-bold rounded-full h-[18px] min-w-[18px] px-1 flex items-center justify-center">
                         {unreadCount}
-                      </Badge>
+                      </span>
                     )}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent align="end" className="w-80 p-0">
-                  <div className="p-3 border-b">
-                    <p className="text-sm font-semibold">Notifications</p>
+                  <div className="p-3 border-b flex items-center justify-between">
+                    <p className="text-sm font-semibold text-foreground">Notifications</p>
                   </div>
                   {unreadNotifs.length === 0 ? (
                     <p className="p-4 text-sm text-muted-foreground text-center">All caught up!</p>
@@ -155,11 +167,11 @@ export function PartnerLayout() {
                         const cfg = notifIcons[n.type] || notifIcons.general;
                         const Icon = cfg.icon;
                         return (
-                          <div key={n.id} className="flex items-start gap-2 px-3 py-2 border-b last:border-0">
+                          <div key={n.id} className="flex items-start gap-2 px-3 py-2.5 border-b last:border-0 hover:bg-muted/50">
                             <Icon className={`h-4 w-4 mt-0.5 shrink-0 ${cfg.color}`} />
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm truncate">{n.message}</p>
-                              <p className="text-xs text-muted-foreground">{relativeTime(n.created_at || "")}</p>
+                              <p className="text-sm leading-snug">{n.message}</p>
+                              <p className="text-xs text-muted-foreground mt-0.5">{relativeTime(n.created_at || "")}</p>
                             </div>
                           </div>
                         );
@@ -174,26 +186,29 @@ export function PartnerLayout() {
                     )}
                     <button
                       onClick={() => { setBellOpen(false); navigate("/portal/dashboard"); }}
-                      className="text-xs hover:underline ml-auto"
-                      style={{ color: "#1B3A6B" }}
+                      className="text-xs text-primary hover:underline ml-auto"
                     >
-                      View all notifications →
+                      View all →
                     </button>
                   </div>
                 </PopoverContent>
               </Popover>
 
+              <div className="hidden lg:block w-px h-6 bg-white/20 mx-2" />
+
+              {/* Account dropdown (desktop) */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="hidden md:flex text-white/80 hover:text-white hover:bg-white/10 gap-1">
-                    <User className="h-4 w-4" />
-                    <span className="text-sm">{companyName || "Account"}</span>
+                  <Button variant="ghost" className="hidden lg:flex text-white/70 hover:text-white hover:bg-white/10 gap-2 px-2">
+                    <span className="flex items-center justify-center h-7 w-7 rounded-full bg-white/20 text-white text-xs font-bold">
+                      {initials}
+                    </span>
                     <ChevronDown className="h-3 w-3" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={() => navigate("/portal/account")}>
-                    <User className="h-4 w-4 mr-2" /> Account
+                    <User className="h-4 w-4 mr-2" /> My Account
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleSignOut}>
                     <LogOut className="h-4 w-4 mr-2" /> Sign Out
@@ -204,44 +219,41 @@ export function PartnerLayout() {
               {/* Mobile hamburger */}
               <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" className="md:hidden text-white/80 hover:text-white hover:bg-white/10">
+                  <Button variant="ghost" size="icon" className="lg:hidden text-white/70 hover:text-white hover:bg-white/10">
                     <Menu className="h-5 w-5" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="right" className="w-64">
-                  <SheetTitle className="text-lg font-bold text-primary mb-4">TF USA</SheetTitle>
-                  <nav className="flex flex-col gap-2">
+                <SheetContent side="right" className="w-72 bg-primary border-none p-0">
+                  <SheetTitle className="sr-only">Navigation</SheetTitle>
+                  <div className="p-5 flex items-center justify-between">
+                    <img src={tfLogo} alt="TF USA" className="h-8 brightness-0 invert" />
+                    <button onClick={() => setMobileOpen(false)} className="text-white/60 hover:text-white">
+                      <X className="h-5 w-5" />
+                    </button>
+                  </div>
+                  <nav className="flex flex-col px-3 mt-2">
                     {navLinks.map((link) => (
                       <NavLink
                         key={link.to}
                         to={link.to}
                         onClick={() => setMobileOpen(false)}
                         className={({ isActive }) =>
-                          `px-3 py-2 rounded-md text-sm font-medium ${
-                            isActive ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-muted"
+                          `px-4 py-3 rounded-md text-sm font-medium transition-colors ${
+                            isActive ? "bg-white/15 text-white" : "text-white/70 hover:text-white hover:bg-white/10"
                           }`
                         }
                       >
                         {link.label}
                       </NavLink>
                     ))}
-                    <NavLink
-                      to="/portal/account"
-                      onClick={() => setMobileOpen(false)}
-                      className={({ isActive }) =>
-                        `px-3 py-2 rounded-md text-sm font-medium ${
-                          isActive ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-muted"
-                        }`
-                      }
-                    >
-                      Account
-                    </NavLink>
-                    <button
-                      onClick={handleSignOut}
-                      className="px-3 py-2 rounded-md text-sm font-medium text-left text-destructive hover:bg-muted"
-                    >
-                      Sign Out
-                    </button>
+                    <div className="border-t border-white/10 mt-4 pt-4 mx-4">
+                      <button
+                        onClick={handleSignOut}
+                        className="flex items-center gap-2 text-sm font-medium text-white/60 hover:text-white w-full"
+                      >
+                        <LogOut className="h-4 w-4" /> Sign Out
+                      </button>
+                    </div>
                   </nav>
                 </SheetContent>
               </Sheet>
@@ -256,12 +268,44 @@ export function PartnerLayout() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-gray-200 bg-white py-4 px-6">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-gray-500">
-          <span>© {new Date().getFullYear()} Total Filtration USA LLC</span>
-          <div className="flex gap-4">
-            <a href="/privacy" className="hover:text-gray-700 underline">Privacy Policy</a>
-            <a href="/terms" className="hover:text-gray-700 underline">Terms & Conditions</a>
+      <footer className="border-t border-border bg-card">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Column 1 — Brand */}
+            <div>
+              <img src={tfLogo} alt="Total Filtration USA" className="h-7 mb-3" />
+              <p className="text-[13px] text-muted-foreground leading-relaxed">
+                Industrial Air & Coolant Filtration For U.S. Businesses
+              </p>
+              <p className="text-xs text-muted-foreground/60 mt-4">
+                © {new Date().getFullYear()} Total Filtration USA LLC. All rights reserved.
+              </p>
+            </div>
+
+            {/* Column 2 — Contact */}
+            <div>
+              <p className="text-[13px] font-medium text-primary uppercase tracking-wider mb-3">Get in touch</p>
+              <div className="space-y-1 text-[13px] text-muted-foreground">
+                <p>14422 Shoreside Way, Suite 110 #132</p>
+                <p>Winter Garden, Florida 34787</p>
+                <p>+1-407-842-0818</p>
+                <a href="mailto:partners@total-filtration.com" className="text-primary hover:underline block">
+                  partners@total-filtration.com
+                </a>
+              </div>
+            </div>
+
+            {/* Column 3 — Links */}
+            <div>
+              <p className="text-[13px] font-medium text-primary uppercase tracking-wider mb-3">Portal</p>
+              <div className="space-y-1.5 text-[13px]">
+                <Link to="/privacy" className="block text-muted-foreground hover:text-primary">Privacy Policy</Link>
+                <Link to="/terms" className="block text-muted-foreground hover:text-primary">Terms & Conditions</Link>
+                <a href="https://total-filtration.com" target="_blank" rel="noopener noreferrer" className="block text-muted-foreground hover:text-primary">
+                  total-filtration.com
+                </a>
+              </div>
+            </div>
           </div>
         </div>
       </footer>

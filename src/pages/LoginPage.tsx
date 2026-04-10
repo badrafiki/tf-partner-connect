@@ -4,20 +4,22 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
+import tfLogo from "@/assets/tf-usa-logo.svg";
 
 export default function LoginPage() {
   const { user, role, loading, signIn } = useAuth();
   const { toast } = useToast();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      <div className="min-h-screen flex items-center justify-center bg-primary">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white" />
       </div>
     );
   }
@@ -43,55 +45,101 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted px-4">
-      <div className="w-full max-w-md">
-        <Card className="shadow-lg">
-          <CardHeader className="text-center space-y-1 pb-2">
-            <div className="text-3xl font-bold text-primary tracking-tight">TF USA</div>
-            <CardTitle className="text-xl">Partner Portal</CardTitle>
-            <CardDescription>Sign in to your distributor account</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="you@company.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+    <div className="min-h-screen flex flex-col lg:flex-row">
+      {/* Left panel — navy brand */}
+      <div className="lg:w-[45%] bg-primary flex flex-col justify-center items-center px-8 py-12 lg:py-0 relative">
+        <div className="max-w-md w-full text-center lg:text-left">
+          <img
+            src={tfLogo}
+            alt="Total Filtration USA"
+            className="h-12 brightness-0 invert mx-auto lg:mx-0 mb-8"
+          />
+          <h1 className="text-[32px] font-semibold text-white leading-tight mb-4">
+            Partner Portal
+          </h1>
+          <p className="text-white/70 text-base leading-relaxed">
+            Exclusive access for authorised TF USA distribution partners.
+          </p>
+        </div>
+        <p className="absolute bottom-6 left-0 right-0 text-center text-white/40 text-[13px] italic hidden lg:block">
+          Industrial Air & Coolant Filtration For U.S. Businesses
+        </p>
+      </div>
+
+      {/* Right panel — white form */}
+      <div className="lg:w-[55%] bg-white flex flex-col justify-center items-center px-6 py-12 lg:py-0">
+        <div className="w-full max-w-[400px]">
+          <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-[0.08em] mb-8">
+            Sign in to your account
+          </p>
+
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-sm text-foreground">Email address</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="you@company.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="h-11"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password" className="text-sm text-foreground">Password</Label>
+              <div className="relative">
                 <Input
                   id="password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  className="h-11 pr-10"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
               </div>
-              <Button type="submit" className="w-full" disabled={submitting}>
-                {submitting ? "Signing in…" : "Sign In"}
-              </Button>
-              <div className="text-center">
-                <Link to="/reset-password" className="text-sm text-muted-foreground hover:text-primary underline-offset-4 hover:underline">
+              <div className="text-right">
+                <Link to="/reset-password" className="text-[13px] text-primary hover:underline">
                   Forgot password?
                 </Link>
               </div>
-            </form>
-          </CardContent>
-        </Card>
-        <p className="text-center text-sm text-muted-foreground mt-4">
-          Don't have an account?{" "}
-          <Link to="/apply" className="text-primary hover:underline font-medium">
-            Apply to become a TF USA partner →
-          </Link>
-        </p>
+            </div>
+
+            <Button
+              type="submit"
+              className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground font-medium"
+              disabled={submitting}
+            >
+              {submitting ? (
+                <span className="flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" /> Signing in…
+                </span>
+              ) : (
+                "Sign in"
+              )}
+            </Button>
+          </form>
+
+          <div className="flex items-center gap-3 my-8">
+            <div className="flex-1 h-px bg-border" />
+            <span className="text-xs text-muted-foreground">New distributor?</span>
+            <div className="flex-1 h-px bg-border" />
+          </div>
+
+          <p className="text-center">
+            <Link to="/apply" className="text-sm font-medium text-primary hover:underline">
+              Apply for a partner account →
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );
