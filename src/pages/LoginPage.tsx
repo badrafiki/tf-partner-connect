@@ -47,8 +47,8 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex flex-col lg:flex-row">
       {/* Left panel — navy brand */}
-      <div className="lg:w-[45%] bg-primary flex flex-col justify-center items-center px-8 py-12 lg:py-0 relative">
-        <div className="max-w-md w-full text-center lg:text-left">
+      <div className="lg:w-[45%] bg-primary flex flex-col items-center px-8 py-12 lg:py-0 relative lg:min-h-screen">
+        <div className="flex-1 flex flex-col justify-center max-w-md w-full text-center lg:text-left">
           <img
             src={tfLogo}
             alt="Total Filtration USA"
@@ -61,13 +61,13 @@ export default function LoginPage() {
             Exclusive access for authorised TF USA distribution partners.
           </p>
         </div>
-        <p className="absolute bottom-6 left-0 right-0 text-center text-white/40 text-[13px] italic hidden lg:block">
+        <p className="lg:absolute lg:bottom-6 lg:left-0 lg:right-0 text-center text-white/40 text-[13px] italic mt-8 lg:mt-0">
           Industrial Air & Coolant Filtration For U.S. Businesses
         </p>
       </div>
 
       {/* Right panel — white form */}
-      <div className="lg:w-[55%] bg-white flex flex-col justify-center items-center px-6 py-12 lg:py-0">
+      <div className="lg:w-[55%] bg-white flex flex-col justify-center items-center px-6 py-12 lg:py-0 min-h-[50vh] lg:min-h-screen">
         <div className="w-full max-w-[400px]">
           <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-[0.08em] mb-8">
             Sign in to your account
