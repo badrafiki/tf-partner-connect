@@ -67,8 +67,8 @@ export default function LoginPage() {
       </div>
 
       {/* Right panel — white form */}
-      <div className="lg:w-[55%] bg-white flex flex-col justify-center items-center px-6 py-12 lg:py-0 min-h-[50vh] lg:min-h-screen">
-        <div className="w-full max-w-[400px]">
+      <div className="lg:w-[55%] flex flex-col justify-center items-center px-6 py-12 lg:py-0 lg:h-screen" style={{ backgroundColor: '#FFFFFF' }}>
+        <div className="w-full max-w-[400px] mx-auto">
           <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-[0.08em] mb-8">
             Sign in to your account
           </p>
