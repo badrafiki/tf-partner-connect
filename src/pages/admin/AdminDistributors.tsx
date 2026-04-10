@@ -257,6 +257,7 @@ function DistributorDetailSheet({
   const [editing, setEditing] = useState(false);
   const [resetLink, setResetLink] = useState<string | null>(null);
   const [emailModalOpen, setEmailModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("details");
   const queryClient = useQueryClient();
 
   // Fetch enquiry stats
@@ -318,14 +319,23 @@ function DistributorDetailSheet({
   if (!partner) return null;
 
   return (
-    <Sheet open={open} onOpenChange={v => { if (!v) { setEditing(false); onClose(); } }}>
-      <SheetContent className="w-full sm:max-w-[500px] overflow-y-auto">
+    <Sheet open={open} onOpenChange={v => { if (!v) { setEditing(false); setActiveTab("details"); onClose(); } }}>
+      <SheetContent className="w-full sm:max-w-[560px] overflow-y-auto">
         <SheetHeader>
-          <SheetTitle className="flex items-center justify-between">
-            <span>{partner.company_name}</span>
-            {!editing && <Button size="sm" variant="outline" onClick={() => setEditing(true)}><Pencil className="h-3 w-3 mr-1" />Edit</Button>}
-          </SheetTitle>
+          <SheetTitle>{partner.company_name}</SheetTitle>
         </SheetHeader>
+
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-2">
+          <TabsList className="w-full">
+            <TabsTrigger value="details" className="flex-1">Details</TabsTrigger>
+            <TabsTrigger value="product-access" className="flex-1">Product Access</TabsTrigger>
+          </TabsList>
+          <TabsContent value="details">
+            {!editing && (
+              <div className="flex justify-end mb-2">
+                <Button size="sm" variant="outline" onClick={() => setEditing(true)}><Pencil className="h-3 w-3 mr-1" />Edit</Button>
+              </div>
+            )}
 
         {editing ? (
           <PartnerForm
