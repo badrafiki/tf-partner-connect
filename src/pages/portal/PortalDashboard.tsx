@@ -11,17 +11,18 @@ import {
 } from "lucide-react";
 
 const tierColors: Record<string, { bg: string; text: string }> = {
-  Bronze: { bg: "#CD7F32", text: "#FFFFFF" },
-  Silver: { bg: "#C0C0C0", text: "#1B3A6B" },
-  Gold: { bg: "#FFD700", text: "#1B3A6B" },
-  Platinum: { bg: "#E5E4E2", text: "#1B3A6B" },
-  Diamond: { bg: "#B9F2FF", text: "#1B3A6B" },
+  Bronze: { bg: "bg-[#CD7F32]", text: "text-white" },
+  Silver: { bg: "bg-muted-foreground", text: "text-white" },
+  Gold: { bg: "bg-amber-400", text: "text-white" },
+  Platinum: { bg: "bg-indigo-500", text: "text-white" },
+  Diamond: { bg: "bg-cyan-500", text: "text-white" },
 };
 
 const notifIcons: Record<string, { icon: typeof Bell; color: string }> = {
   price_change: { icon: Tag, color: "text-amber-500" },
   stock_update: { icon: Package, color: "text-blue-500" },
   quotation_issued: { icon: FileText, color: "text-green-500" },
+  order_update: { icon: Truck, color: "text-purple-500" },
   general: { icon: Bell, color: "text-muted-foreground" },
 };
 
@@ -29,7 +30,7 @@ const statusColors: Record<string, string> = {
   submitted: "bg-amber-100 text-amber-800",
   reviewed: "bg-blue-100 text-blue-800",
   quoted: "bg-green-100 text-green-800",
-  closed: "bg-gray-100 text-gray-600",
+  closed: "bg-muted text-muted-foreground",
 };
 
 function formatUSD(v: number | null) {
@@ -59,7 +60,6 @@ export default function PortalDashboard() {
   const tier = tierLabel || "Bronze";
   const tc = tierColors[tier] || tierColors.Bronze;
 
-  // KPI data
   const { data: enquiries = [] } = useQuery({
     queryKey: ["partner-enquiries", partnerId],
     queryFn: async () => {
@@ -78,7 +78,7 @@ export default function PortalDashboard() {
     queryFn: async () => {
       const { data } = await supabase
         .from("quotations")
-        .select("id, status, issued_at, expires_at, notes")
+        .select("id, status, issued_at, expires_at, notes, enquiry_id")
         .eq("partner_id", partnerId!);
       return data || [];
     },
@@ -132,64 +132,53 @@ export default function PortalDashboard() {
   const unreadCount = notifications.filter((n) => !n.read).length;
   const recentEnquiries = enquiries.slice(0, 3);
 
+  const kpis = [
+    { icon: FileText, label: "Total Enquiries", value: String(totalEnquiries), context: "All time", highlight: false },
+    { icon: ShoppingCart, label: "Pending Quotations", value: String(pendingQuotations.length), context: "Awaiting response", highlight: pendingQuotations.length > 0 },
+    { icon: DollarSign, label: "Total Value Enquired", value: formatUSD(totalValue), context: "Partner price, all time", highlight: false },
+    { icon: Percent, label: "Your Discount", value: `${discountPercentage}%`, context: "Applied to all products", highlight: false },
+  ];
+
   return (
     <div className="space-y-6">
-      {/* Welcome Header */}
-      <div className="rounded-lg p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4" style={{ backgroundColor: "#1B3A6B" }}>
+      {/* Welcome Banner */}
+      <div className="rounded-xl bg-primary px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">Welcome back, {contactName || "Partner"}</h1>
-          <p className="text-white/70 text-sm mt-1">{companyName}</p>
+          <h1 className="text-xl font-medium text-white">
+            Welcome back, {contactName || "Partner"}
+          </h1>
+          <p className="text-white/60 text-sm mt-0.5">{companyName}</p>
         </div>
         <div className="text-right">
-          <span className="inline-block px-3 py-1 rounded-full text-sm font-semibold" style={{ backgroundColor: tc.bg, color: tc.text }}>
+          <span className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${tc.bg} ${tc.text}`}>
             {tier} Partner
           </span>
-          <p className="text-white/60 text-xs mt-1">Your discount: {discountPercentage}% off list price</p>
+          <p className="text-white/60 text-xs mt-1">{discountPercentage}% partner discount</p>
         </div>
       </div>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="pt-6">
-            <FileText className="h-5 w-5 mb-2" style={{ color: "#1B3A6B" }} />
-            <p className="text-xs text-muted-foreground">Total Enquiries</p>
-            <p className="text-2xl font-bold" style={{ color: "#1B3A6B" }}>{totalEnquiries}</p>
-            <p className="text-xs text-muted-foreground mt-1">All time</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <ShoppingCart className="h-5 w-5 mb-2" style={{ color: "#1B3A6B" }} />
-            <p className="text-xs text-muted-foreground">Pending Quotations</p>
-            <p className={`text-2xl font-bold ${pendingQuotations.length > 0 ? "text-destructive" : ""}`} style={pendingQuotations.length === 0 ? { color: "#1B3A6B" } : {}}>
-              {pendingQuotations.length}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">Awaiting response</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <DollarSign className="h-5 w-5 mb-2" style={{ color: "#1B3A6B" }} />
-            <p className="text-xs text-muted-foreground">Total Value Enquired</p>
-            <p className="text-2xl font-bold" style={{ color: "#1B3A6B" }}>{formatUSD(totalValue)}</p>
-            <p className="text-xs text-muted-foreground mt-1">Partner price, all time</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <Percent className="h-5 w-5 mb-2" style={{ color: "#1B3A6B" }} />
-            <p className="text-xs text-muted-foreground">Your Discount</p>
-            <p className="text-2xl font-bold" style={{ color: "#1B3A6B" }}>{discountPercentage}%</p>
-            <p className="text-xs text-muted-foreground mt-1">Applied to all products</p>
-          </CardContent>
-        </Card>
+        {kpis.map((kpi) => (
+          <Card key={kpi.label} className="border border-border rounded-xl">
+            <CardContent className="pt-5 pb-4">
+              <div className="h-10 w-10 rounded-full bg-tf-navy-light flex items-center justify-center mb-3">
+                <kpi.icon className="h-5 w-5 text-primary" />
+              </div>
+              <p className="text-[13px] text-muted-foreground">{kpi.label}</p>
+              <p className={`text-[28px] font-semibold mt-0.5 ${kpi.highlight ? "text-accent" : "text-primary"}`}>
+                {kpi.value}
+              </p>
+              <p className="text-xs text-muted-foreground/60 mt-0.5">{kpi.context}</p>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       {/* Notifications Feed */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-semibold text-foreground">Notifications</h2>
+          <h2 className="text-base font-semibold text-primary">Notifications</h2>
           {unreadCount > 0 && (
             <button onClick={() => markAllReadMutation.mutate()} className="text-sm text-muted-foreground hover:text-foreground">
               Mark all read
@@ -197,11 +186,11 @@ export default function PortalDashboard() {
           )}
         </div>
         {notifications.length === 0 ? (
-          <Card><CardContent className="py-8 text-center text-muted-foreground text-sm">
+          <Card className="border border-border"><CardContent className="py-8 text-center text-muted-foreground text-sm">
             No notifications yet. We'll let you know when prices change, stock updates or a quotation is ready.
           </CardContent></Card>
         ) : (
-          <div className="space-y-1">
+          <div className="space-y-0.5">
             {notifications.map((n) => {
               const cfg = notifIcons[n.type] || notifIcons.general;
               const Icon = cfg.icon;
@@ -209,13 +198,12 @@ export default function PortalDashboard() {
                 <div
                   key={n.id}
                   onClick={() => !n.read && markReadMutation.mutate(n.id)}
-                  className={`flex items-start gap-3 px-4 py-3 rounded-md cursor-pointer transition-colors ${
-                    !n.read ? "bg-primary/5 border-l-[3px]" : "border-l-[3px] border-transparent"
+                  className={`flex items-start gap-3 px-4 py-3 rounded-lg cursor-pointer transition-colors ${
+                    !n.read ? "bg-tf-navy-light border-l-[3px] border-l-primary" : "hover:bg-muted/50 border-l-[3px] border-l-transparent"
                   }`}
-                  style={!n.read ? { borderLeftColor: "#1B3A6B" } : {}}
                 >
                   <Icon className={`h-4 w-4 mt-0.5 shrink-0 ${cfg.color}`} />
-                  <span className={`flex-1 text-sm ${!n.read ? "font-semibold" : ""}`}>{n.message}</span>
+                  <span className={`flex-1 text-sm ${!n.read ? "font-semibold text-foreground" : "text-foreground"}`}>{n.message}</span>
                   <span className="text-xs text-muted-foreground whitespace-nowrap">{relativeTime(n.created_at || "")}</span>
                 </div>
               );
@@ -228,24 +216,24 @@ export default function PortalDashboard() {
       {pendingQuotations.length > 0 && (
         <div>
           <div className="flex items-center gap-2 mb-3">
-            <span className="h-2 w-2 rounded-full bg-destructive" />
-            <h2 className="text-lg font-semibold text-foreground">Action required — quotations awaiting your response</h2>
+            <span className="h-2 w-2 rounded-full bg-accent" />
+            <h2 className="text-sm font-medium text-accent">Action required</h2>
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
             {pendingQuotations.map((q) => {
               const days = q.expires_at ? daysUntil(q.expires_at) : null;
               return (
-                <Card key={q.id}>
+                <Card key={q.id} className="border-l-[3px] border-l-accent">
                   <CardContent className="pt-5 space-y-1">
                     <p className="text-sm font-mono text-muted-foreground">{q.id.slice(0, 8)}</p>
                     <p className="text-sm">Issued: {new Date(q.issued_at || "").toLocaleDateString()}</p>
                     {days != null && (
-                      <p className={`text-sm font-medium ${days <= 2 ? "text-destructive" : days <= 7 ? "text-amber-600" : "text-muted-foreground"}`}>
+                      <p className={`text-sm font-medium ${days <= 2 ? "text-accent" : days <= 7 ? "text-amber-600" : "text-muted-foreground"}`}>
                         Expires in {days} day{days !== 1 ? "s" : ""}
                       </p>
                     )}
-                    <Link to="/portal/quotations" className="text-sm font-medium hover:underline" style={{ color: "#1B3A6B" }}>
-                      View &amp; respond →
+                    <Link to="/portal/quotations" className="text-sm font-medium text-primary hover:underline block pt-1">
+                      View & respond →
                     </Link>
                   </CardContent>
                 </Card>
@@ -258,11 +246,11 @@ export default function PortalDashboard() {
       {/* Recent Enquiries */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-semibold text-foreground">Recent enquiries</h2>
-          <Link to="/portal/enquiries" className="text-sm hover:underline" style={{ color: "#1B3A6B" }}>View all →</Link>
+          <h2 className="text-base font-semibold text-primary">Recent enquiries</h2>
+          <Link to="/portal/enquiries" className="text-sm text-primary hover:underline">View all →</Link>
         </div>
         {recentEnquiries.length === 0 ? (
-          <Card><CardContent className="py-8 text-center space-y-3">
+          <Card className="border border-border"><CardContent className="py-8 text-center space-y-3">
             <p className="text-muted-foreground text-sm">No enquiries yet. Browse the catalog and submit your first enquiry.</p>
             <Button asChild><Link to="/portal/products">Browse products →</Link></Button>
           </CardContent></Card>
@@ -270,27 +258,25 @@ export default function PortalDashboard() {
           <div className="grid gap-3 sm:grid-cols-3">
             {recentEnquiries.map((e) => {
               const items = Array.isArray(e.line_items) ? e.line_items : [];
-              // Find quotation for this enquiry
-              const linkedQt = quotations.find((q) => q.id && e.id && quotations.some((qq: any) => qq.enquiry_id === e.id));
               const acceptedQt = quotations.find((q: any) => q.enquiry_id === e.id && q.status === "accepted");
               const linkedOrder = acceptedQt ? orders.find((o: any) => o.quotation_id === acceptedQt.id) : null;
 
               return (
-                <Card key={e.id}>
+                <Card key={e.id} className="border border-border rounded-xl">
                   <CardContent className="pt-5 space-y-1">
                     <p className="text-sm font-mono text-muted-foreground">{e.id.slice(0, 8)}</p>
-                    <p className="text-sm">{new Date(e.submitted_at || "").toLocaleDateString()}</p>
-                    <p className="text-sm">{items.length} product{items.length !== 1 ? "s" : ""}</p>
-                    <p className="text-sm font-medium">{formatUSD(Number(e.total_partner_usd))}</p>
-                    <Badge className={statusColors[e.status] || "bg-gray-100 text-gray-600"}>{e.status}</Badge>
+                    <p className="text-sm text-foreground">{new Date(e.submitted_at || "").toLocaleDateString()}</p>
+                    <p className="text-sm text-foreground">{items.length} product{items.length !== 1 ? "s" : ""}</p>
+                    <p className="text-sm font-medium text-primary">{formatUSD(Number(e.total_partner_usd))}</p>
+                    <Badge className={statusColors[e.status] || "bg-muted text-muted-foreground"}>{e.status}</Badge>
                     {e.status === "quoted" && (
-                      <Link to="/portal/quotations" className="block text-sm font-medium hover:underline mt-1" style={{ color: "#1B3A6B" }}>
+                      <Link to="/portal/quotations" className="block text-sm font-medium text-primary hover:underline mt-1">
                         Quotation ready →
                       </Link>
                     )}
                     {linkedOrder && (
                       <div className="mt-1 text-xs space-y-0.5">
-                        <p className="font-medium">
+                        <p className="font-medium text-foreground">
                           Order ORD-{linkedOrder.modusys_order_number || linkedOrder.id?.slice(0, 8)}: {linkedOrder.status === "in_progress" ? "Processing" : linkedOrder.status}
                         </p>
                         {linkedOrder.status === "shipped" && linkedOrder.tracking_number && (
@@ -298,9 +284,7 @@ export default function PortalDashboard() {
                             <Truck className="h-3 w-3" /> {linkedOrder.tracking_number}
                           </p>
                         )}
-                        <Link to="/portal/orders" className="text-xs hover:underline" style={{ color: "#1B3A6B" }}>
-                          View order →
-                        </Link>
+                        <Link to="/portal/orders" className="text-xs text-primary hover:underline">View order →</Link>
                       </div>
                     )}
                   </CardContent>
@@ -312,19 +296,19 @@ export default function PortalDashboard() {
       </div>
 
       {/* Rep Contact Card */}
-      <Card className="bg-muted">
+      <Card className="bg-tf-navy-light border border-border">
         <CardContent className="pt-5 flex items-start gap-3">
-          <Mail className="h-5 w-5 text-muted-foreground mt-0.5" />
+          <Mail className="h-5 w-5 text-primary mt-0.5" />
           <div>
             {assignedRep ? (
               <>
-                <p className="text-sm font-medium">Your TF USA contact</p>
-                <p className="text-sm">{assignedRep}</p>
+                <p className="text-sm font-medium text-foreground">Your TF USA contact</p>
+                <p className="text-sm text-foreground">{assignedRep}</p>
               </>
             ) : (
-              <p className="text-sm font-medium">Questions? Contact the TF USA team</p>
+              <p className="text-sm font-medium text-foreground">Questions? Contact the TF USA team</p>
             )}
-            <a href="mailto:partners@total-filtration.com" className="text-sm hover:underline" style={{ color: "#1B3A6B" }}>
+            <a href="mailto:partners@total-filtration.com" className="text-sm text-primary hover:underline">
               partners@total-filtration.com
             </a>
           </div>

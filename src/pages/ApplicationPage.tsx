@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link } from "react-router-dom";
+import tfLogoImport from "@/assets/tf-usa-logo.svg";
 import { CheckCircle, Loader2, Info } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -49,11 +50,9 @@ function InfoBox({ children }: { children: React.ReactNode }) {
 
 function SectionCard({ index, title, children, id }: { index: number; title: string; children: React.ReactNode; id: string }) {
   return (
-    <section id={id} className="bg-card rounded-lg border border-border p-6 md:p-8 mb-6 scroll-mt-28">
-      <h2 className="text-lg font-semibold text-primary mb-6 flex items-center gap-2">
-        <span className="flex items-center justify-center h-7 w-7 rounded-full bg-primary text-primary-foreground text-xs font-bold">{index + 1}</span>
-        {title}
-      </h2>
+    <section id={id} className="bg-card rounded-lg border-l-4 border-l-primary border border-border p-7 md:p-8 mb-6 scroll-mt-28 shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
+      <p className="text-xs font-medium text-accent uppercase tracking-[0.06em] mb-1">Section {index + 1}</p>
+      <h2 className="text-lg font-semibold text-primary mb-6">{title}</h2>
       {children}
     </section>
   );
@@ -223,10 +222,10 @@ export default function ApplicationPage() {
   if (submitted) {
     return (
       <div className="min-h-screen bg-background">
-        <header className="bg-primary text-primary-foreground">
+        <header className="bg-primary">
           <div className="max-w-5xl mx-auto flex items-center justify-between px-4 py-3">
-            <span className="font-bold text-lg tracking-tight">TF USA</span>
-            <Link to="/login" className="text-sm hover:underline opacity-90">Sign in →</Link>
+            <img src={tfLogoImport} alt="TF USA" className="h-8 brightness-0 invert" />
+            <Link to="/login" className="text-sm text-white/80 hover:text-white hover:underline">Sign in →</Link>
           </div>
         </header>
         <div className="flex items-center justify-center px-4 py-24">
@@ -236,10 +235,7 @@ export default function ApplicationPage() {
             <p className="text-muted-foreground mb-6">
               Thank you, {contactName}. We've received your application and our team will review it within 3–5 business days. You'll hear from us at {contactEmailDisplay}.
             </p>
-            <a
-              href="https://total-filtration.com"
-              className="text-primary font-medium hover:underline"
-            >
+            <a href="https://total-filtration.com" className="text-primary font-medium hover:underline">
               Return to total-filtration.com →
             </a>
           </div>
@@ -248,19 +244,18 @@ export default function ApplicationPage() {
     );
   }
 
-  // ---------- form ----------
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="bg-primary text-primary-foreground sticky top-0 z-50">
-        <div className="max-w-5xl mx-auto flex items-center justify-between px-4 py-3">
-          <span className="font-bold text-lg tracking-tight">TF USA</span>
-          <Link to="/login" className="text-sm hover:underline opacity-90">Already a partner? Sign in →</Link>
+      <header className="bg-primary sticky top-0 z-50">
+        <div className="max-w-5xl mx-auto flex items-center justify-between px-4 h-[60px]">
+          <img src={tfLogoImport} alt="TF USA" className="h-8 brightness-0 invert" />
+          <Link to="/login" className="text-sm text-white/80 hover:text-white">Already a partner? Sign in →</Link>
         </div>
       </header>
 
       {/* Sticky progress */}
-      <div className="sticky top-[52px] z-40 bg-background border-b border-border">
+      <div className="sticky top-[60px] z-40 bg-primary/95 backdrop-blur border-b border-white/10">
         <div className="max-w-3xl mx-auto px-4 py-2 flex items-center gap-1.5 overflow-x-auto">
           {SECTION_TITLES.map((t, i) => (
             <button
@@ -271,8 +266,12 @@ export default function ApplicationPage() {
                 el?.scrollIntoView({ behavior: "smooth" });
               }}
               className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-colors
-                ${sectionComplete[i] ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}
-                ${activeSection === i ? "ring-2 ring-accent" : ""}
+                ${sectionComplete[i]
+                  ? "bg-white text-primary"
+                  : activeSection === i
+                    ? "bg-white/20 text-white border border-white/40"
+                    : "bg-white/10 text-white/60"
+                }
               `}
             >
               <span className="font-bold">S{i + 1}</span>
@@ -283,15 +282,16 @@ export default function ApplicationPage() {
       </div>
 
       {/* Hero */}
-      <div className="max-w-3xl mx-auto px-4 pt-8 pb-4">
-        <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
+      <div className="max-w-3xl mx-auto px-4 pt-10 pb-4">
+        <p className="text-xs font-medium text-accent uppercase tracking-[0.08em] mb-2">Distributor Application</p>
+        <h1 className="text-2xl md:text-[32px] font-semibold text-primary leading-tight mb-3">
           Apply to become a TF USA distribution partner
         </h1>
-        <p className="text-muted-foreground mb-4">
-          Complete the form below. Our team reviews all applications within 3–5 business days and will be in touch via email.
+        <p className="text-muted-foreground text-base mb-5">
+          Complete the form below. Our team reviews all applications within 3–5 business days.
         </p>
         <InfoBox>
-          All information is kept strictly confidential and used solely for account setup and credit assessment purposes.
+          All information is kept strictly confidential and used solely for account setup and credit assessment.
         </InfoBox>
       </div>
 
