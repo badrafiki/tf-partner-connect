@@ -500,6 +500,8 @@ export type Database = {
           hidden: boolean
           id: string
           list_price_usd: number
+          modusys_product_id: string | null
+          modusys_synced_at: string | null
           name: string
           sku: string
           stock_qty: number | null
@@ -514,6 +516,8 @@ export type Database = {
           hidden?: boolean
           id?: string
           list_price_usd: number
+          modusys_product_id?: string | null
+          modusys_synced_at?: string | null
           name: string
           sku: string
           stock_qty?: number | null
@@ -528,6 +532,8 @@ export type Database = {
           hidden?: boolean
           id?: string
           list_price_usd?: number
+          modusys_product_id?: string | null
+          modusys_synced_at?: string | null
           name?: string
           sku?: string
           stock_qty?: number | null
