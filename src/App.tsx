@@ -15,6 +15,7 @@ import ApplicationPage from "@/pages/ApplicationPage";
 import PendingActivationPage from "@/pages/PendingActivationPage";
 import PrivacyPolicyPage from "@/pages/PrivacyPolicyPage";
 import TermsPage from "@/pages/TermsPage";
+import CookiePolicyPage from "@/pages/CookiePolicyPage";
 
 import PortalDashboard from "@/pages/portal/PortalDashboard";
 import PortalProducts from "@/pages/portal/PortalProducts";
@@ -53,6 +54,7 @@ const App = () => (
             <Route path="/pending" element={<PendingActivationPage />} />
             <Route path="/privacy" element={<PrivacyPolicyPage />} />
             <Route path="/terms" element={<TermsPage />} />
+            <Route path="/cookies" element={<CookiePolicyPage />} />
 
             {/* Partner Portal */}
             <Route

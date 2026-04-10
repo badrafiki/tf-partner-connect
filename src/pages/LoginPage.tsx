@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, Navigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import tfLogo from "@/assets/tf-usa-logo.svg";
+import { SITE_URL } from "@/constants";
 
 export default function LoginPage() {
   const { user, role, loading, signIn } = useAuth();
@@ -45,103 +47,119 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row">
-      {/* Left panel — navy brand */}
-      <div className="lg:w-[45%] bg-primary flex flex-col items-center px-8 py-12 lg:py-0 relative lg:min-h-screen">
-        <div className="flex-1 flex flex-col justify-center max-w-md w-full text-center lg:text-left">
-          <img
-            src={tfLogo}
-            alt="Total Filtration USA"
-            className="h-12 brightness-0 invert mx-auto lg:mx-0 mb-8"
-          />
-          <h1 className="text-[32px] font-semibold text-white leading-tight mb-4">
-            Partner Portal
-          </h1>
-          <p className="text-white/70 text-base leading-relaxed">
-            Exclusive access for authorised TF USA distribution partners.
-          </p>
-        </div>
-        <p className="lg:absolute lg:bottom-6 lg:left-0 lg:right-0 text-center text-white/60 text-[13px] italic mt-8 lg:mt-0">
-          Industrial Air & Coolant Filtration For U.S. Businesses
-        </p>
-      </div>
-
-      {/* Right panel — white form */}
-      <div className="lg:w-[55%] flex flex-col justify-center items-center px-6 min-h-screen" style={{ backgroundColor: '#FFFFFF' }}>
-        <div className="w-full max-w-[400px] mx-auto">
-          <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-[0.08em] mb-8">
-            Sign in to your account
-          </p>
-
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm text-foreground">Email address</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="you@company.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="h-11"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-sm text-foreground">Password</Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="h-11 pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-              <div className="text-right">
-                <Link to="/reset-password" className="text-[13px] text-primary hover:underline">
-                  Forgot password?
-                </Link>
-              </div>
-            </div>
-
-            <Button
-              type="submit"
-              className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground font-medium"
-              disabled={submitting}
-            >
-              {submitting ? (
-                <span className="flex items-center gap-2">
-                  <Loader2 className="h-4 w-4 animate-spin" /> Signing in…
-                </span>
-              ) : (
-                "Sign in"
-              )}
-            </Button>
-          </form>
-
-          <div className="flex items-center gap-3 my-8">
-            <div className="flex-1 h-px bg-border" />
-            <span className="text-xs text-muted-foreground">New distributor?</span>
-            <div className="flex-1 h-px bg-border" />
+    <>
+      <Helmet>
+        <title>Partner Portal Sign In | TF USA</title>
+        <meta name="description" content="Sign in to the TF USA Partner Portal to access exclusive distributor pricing, submit enquiries and manage your account." />
+        <meta property="og:title" content="TF USA Partner Portal" />
+        <meta property="og:description" content="Sign in to access exclusive distributor pricing, product catalogue and account management." />
+        <meta property="og:url" content={`${SITE_URL}/login`} />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="TF USA Partner Portal" />
+        <meta property="og:image" content={`${SITE_URL}/og-image.png`} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="TF USA Partner Portal" />
+        <meta name="twitter:description" content="Sign in to access exclusive distributor pricing, product catalogue and account management." />
+        <meta name="twitter:image" content={`${SITE_URL}/og-image.png`} />
+      </Helmet>
+      <div className="min-h-screen flex flex-col lg:flex-row">
+        {/* Left panel — navy brand */}
+        <div className="lg:w-[45%] bg-primary flex flex-col items-center px-8 py-12 lg:py-0 relative lg:min-h-screen">
+          <div className="flex-1 flex flex-col justify-center max-w-md w-full text-center lg:text-left">
+            <img
+              src={tfLogo}
+              alt="Total Filtration USA"
+              className="h-12 brightness-0 invert mx-auto lg:mx-0 mb-8"
+            />
+            <h1 className="text-[32px] font-semibold text-white leading-tight mb-4">
+              Partner Portal
+            </h1>
+            <p className="text-white/70 text-base leading-relaxed">
+              Exclusive access for authorised TF USA distribution partners.
+            </p>
           </div>
-
-          <p className="text-center">
-            <Link to="/apply" className="text-sm font-medium text-primary hover:underline">
-              Apply for a partner account →
-            </Link>
+          <p className="lg:absolute lg:bottom-6 lg:left-0 lg:right-0 text-center text-white/60 text-[13px] italic mt-8 lg:mt-0">
+            Industrial Air & Coolant Filtration For U.S. Businesses
           </p>
         </div>
+
+        {/* Right panel — white form */}
+        <div className="lg:w-[55%] flex flex-col justify-center items-center px-6 min-h-screen" style={{ backgroundColor: '#FFFFFF' }}>
+          <div className="w-full max-w-[400px] mx-auto">
+            <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-[0.08em] mb-8">
+              Sign in to your account
+            </p>
+
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-sm text-foreground">Email address</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="you@company.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="h-11"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-sm text-foreground">Password</Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="h-11 pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+                <div className="text-right">
+                  <Link to="/reset-password" className="text-[13px] text-primary hover:underline">
+                    Forgot password?
+                  </Link>
+                </div>
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground font-medium"
+                disabled={submitting}
+              >
+                {submitting ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" /> Signing in…
+                  </span>
+                ) : (
+                  "Sign in"
+                )}
+              </Button>
+            </form>
+
+            <div className="flex items-center gap-3 my-8">
+              <div className="flex-1 h-px bg-border" />
+              <span className="text-xs text-muted-foreground">New distributor?</span>
+              <div className="flex-1 h-px bg-border" />
+            </div>
+
+            <p className="text-center">
+              <Link to="/apply" className="text-sm font-medium text-primary hover:underline">
+                Apply for a partner account →
+              </Link>
+            </p>
+          </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
