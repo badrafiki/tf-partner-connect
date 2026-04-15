@@ -16,6 +16,7 @@ interface IncomingProduct {
   list_price_usd: number;
   cost_price_usd: number;
   is_active: boolean;
+  product_url: string | null;
 }
 
 Deno.serve(async (req) => {
@@ -76,6 +77,7 @@ Deno.serve(async (req) => {
                 cost_price_usd: p.cost_price_usd,
                 hidden: false,
                 modusys_product_id: p.modusys_product_id,
+                product_url: p.product_url,
                 modusys_synced_at: new Date().toISOString(),
               },
               { onConflict: "modusys_product_id" }

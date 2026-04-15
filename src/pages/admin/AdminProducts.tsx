@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Search, Eye, EyeOff, Download, Package, RefreshCw, Info } from "lucide-react";
+import { Search, Eye, EyeOff, Download, Package, RefreshCw, Info, Link, ExternalLink } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +12,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { formatDistanceToNow } from "date-fns";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -21,6 +22,36 @@ const formatUSD = (n: number) => new Intl.NumberFormat("en-US", { style: "curren
 function calcMargin(list: number, cost: number | null) {
   if (!cost || cost <= 0 || list <= 0) return null;
   return ((list - cost) / list) * 100;
+}
+
+function ProductUrlCell({ product, onSave }: { product: Product; onSave: (url: string) => void }) {
+  const [editing, setEditing] = useState(false);
+  const [url, setUrl] = useState((product as any).product_url || "");
+  const currentUrl = (product as any).product_url;
+
+  return (
+    <Popover open={editing} onOpenChange={setEditing}>
+      <PopoverTrigger asChild>
+        <button className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary">
+          {currentUrl ? <ExternalLink className="h-3 w-3" /> : <Link className="h-3 w-3" />}
+          {currentUrl ? "Edit" : "Add"}
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-80 p-3 space-y-2" align="start">
+        <p className="text-xs font-medium">Product URL</p>
+        <Input
+          placeholder="https://tf-usa.com/product/..."
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
+          className="text-sm"
+        />
+        <div className="flex gap-2 justify-end">
+          <Button variant="outline" size="sm" onClick={() => setEditing(false)}>Cancel</Button>
+          <Button size="sm" onClick={() => { onSave(url); setEditing(false); }}>Save</Button>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
 }
 
 export default function AdminProducts() {
@@ -83,6 +114,17 @@ export default function AdminProducts() {
     onSuccess: (nowHidden) => {
       queryClient.invalidateQueries({ queryKey: ["admin-products"] });
       toast.success(nowHidden ? "Product hidden from catalog" : "Product visible in catalog");
+    },
+  });
+
+  const updateUrl = useMutation({
+    mutationFn: async ({ id, url }: { id: string; url: string }) => {
+      const { error } = await supabase.from("products").update({ product_url: url || null }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+      toast.success("Product URL updated");
     },
   });
 
@@ -232,6 +274,7 @@ export default function AdminProducts() {
                 <TableHead className="text-right">Cost Price</TableHead>
                 <TableHead className="text-right">Margin</TableHead>
                 <TableHead>ModuSys ID</TableHead>
+                <TableHead>URL</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="w-16">Visibility</TableHead>
               </TableRow>
@@ -261,6 +304,9 @@ export default function AdminProducts() {
                       ) : (
                         <Badge variant="outline" className="text-xs bg-gray-100 text-gray-600">Manual</Badge>
                       )}
+                    </TableCell>
+                    <TableCell>
+                      <ProductUrlCell product={p} onSave={(url) => updateUrl.mutate({ id: p.id, url })} />
                     </TableCell>
                     <TableCell>
                       <Badge variant={p.hidden ? "outline" : "default"} className={!p.hidden ? "bg-green-100 text-green-800 border-green-200" : ""}>

@@ -12,6 +12,7 @@ import { useInfiniteQuery, useQuery, useMutation, useQueryClient } from "@tansta
 import { toast } from "sonner";
 import { useBasket } from "@/contexts/BasketContext";
 import { analytics } from "@/lib/analytics";
+import ProductDetailDrawer from "@/components/portal/ProductDetailDrawer";
 
 type SortKey = "name-asc" | "price-low" | "price-high" | "stock-first";
 const PAGE_SIZE = 24;
@@ -41,6 +42,7 @@ export default function PortalProducts() {
   const [addingCard, setAddingCard] = useState<string | null>(null);
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [addedItems, setAddedItems] = useState<Set<string>>(new Set());
+  const [drawerProduct, setDrawerProduct] = useState<any>(null);
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(searchInput), 300);
@@ -312,11 +314,12 @@ export default function PortalProducts() {
               return (
                 <div
                   key={p.id}
-                  className="bg-card rounded-xl border border-border hover:border-primary hover:-translate-y-px transition-all duration-150 flex flex-col relative overflow-hidden"
+                  className="bg-card rounded-xl border border-border hover:border-primary hover:-translate-y-px transition-all duration-150 flex flex-col relative overflow-hidden cursor-pointer"
+                  onClick={() => setDrawerProduct(p)}
                 >
                   <div className="p-4 pb-2 flex items-start justify-between">
                     <span className="font-mono text-[11px] text-muted-foreground/60">{p.sku}</span>
-                    <button onClick={() => { toggleFavMutation.mutate(p.id!); analytics.productFavourited(p.sku ?? "", favourites.has(p.id!) ? "removed" : "added"); }} className="absolute top-4 right-4" aria-label={favourites.has(p.id!) ? "Remove from favourites" : "Add to favourites"}>
+                    <button onClick={(e) => { e.stopPropagation(); toggleFavMutation.mutate(p.id!); analytics.productFavourited(p.sku ?? "", favourites.has(p.id!) ? "removed" : "added"); }} className="absolute top-4 right-4" aria-label={favourites.has(p.id!) ? "Remove from favourites" : "Add to favourites"}>
                       <Heart className={`h-5 w-5 transition-colors ${
                         favourites.has(p.id!) ? "fill-accent text-accent" : "text-muted-foreground/40 hover:text-accent"
                       }`} />
@@ -344,7 +347,7 @@ export default function PortalProducts() {
                     </div>
                   </div>
 
-                  <div className="p-4 pt-3">
+                  <div className="p-4 pt-3" onClick={(e) => e.stopPropagation()}>
                     {justAdded ? (
                       <div className="h-10 flex items-center justify-center text-emerald-600 font-medium text-sm gap-1">
                         <Check className="h-4 w-4" /> Added to basket!
@@ -387,6 +390,29 @@ export default function PortalProducts() {
           )}
         </>
       )}
+
+      <ProductDetailDrawer
+        product={drawerProduct}
+        open={!!drawerProduct}
+        onOpenChange={(open) => { if (!open) setDrawerProduct(null); }}
+        partnerPrice={drawerProduct ? getPartnerPrice(drawerProduct.list_price_usd) : 0}
+        saving={drawerProduct ? getSaving(drawerProduct.list_price_usd) : 0}
+        isFavourite={drawerProduct ? favourites.has(drawerProduct.id) : false}
+        onToggleFavourite={() => { if (drawerProduct) { toggleFavMutation.mutate(drawerProduct.id); analytics.productFavourited(drawerProduct.sku ?? "", favourites.has(drawerProduct.id) ? "removed" : "added"); } }}
+        onAddToBasket={(qty) => {
+          if (!drawerProduct) return;
+          const partnerPrice = (drawerProduct.list_price_usd ?? 0) * (1 - discount);
+          addItem({
+            product_id: drawerProduct.id,
+            sku: drawerProduct.sku ?? "",
+            name: drawerProduct.name ?? "",
+            category: drawerProduct.category,
+            list_price_usd: drawerProduct.list_price_usd ?? 0,
+          }, qty);
+          analytics.addToBasket(drawerProduct.sku ?? "", drawerProduct.name ?? "", partnerPrice);
+          toast.success("Added to basket");
+        }}
+      />
     </div>
   );
 }
