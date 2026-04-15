@@ -314,11 +314,12 @@ export default function PortalProducts() {
               return (
                 <div
                   key={p.id}
-                  className="bg-card rounded-xl border border-border hover:border-primary hover:-translate-y-px transition-all duration-150 flex flex-col relative overflow-hidden"
+                  className="bg-card rounded-xl border border-border hover:border-primary hover:-translate-y-px transition-all duration-150 flex flex-col relative overflow-hidden cursor-pointer"
+                  onClick={() => setDrawerProduct(p)}
                 >
                   <div className="p-4 pb-2 flex items-start justify-between">
                     <span className="font-mono text-[11px] text-muted-foreground/60">{p.sku}</span>
-                    <button onClick={() => { toggleFavMutation.mutate(p.id!); analytics.productFavourited(p.sku ?? "", favourites.has(p.id!) ? "removed" : "added"); }} className="absolute top-4 right-4" aria-label={favourites.has(p.id!) ? "Remove from favourites" : "Add to favourites"}>
+                    <button onClick={(e) => { e.stopPropagation(); toggleFavMutation.mutate(p.id!); analytics.productFavourited(p.sku ?? "", favourites.has(p.id!) ? "removed" : "added"); }} className="absolute top-4 right-4" aria-label={favourites.has(p.id!) ? "Remove from favourites" : "Add to favourites"}>
                       <Heart className={`h-5 w-5 transition-colors ${
                         favourites.has(p.id!) ? "fill-accent text-accent" : "text-muted-foreground/40 hover:text-accent"
                       }`} />
