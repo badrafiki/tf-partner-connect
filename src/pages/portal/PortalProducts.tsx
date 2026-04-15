@@ -390,6 +390,29 @@ export default function PortalProducts() {
           )}
         </>
       )}
+
+      <ProductDetailDrawer
+        product={drawerProduct}
+        open={!!drawerProduct}
+        onOpenChange={(open) => { if (!open) setDrawerProduct(null); }}
+        partnerPrice={drawerProduct ? getPartnerPrice(drawerProduct.list_price_usd) : 0}
+        saving={drawerProduct ? getSaving(drawerProduct.list_price_usd) : 0}
+        isFavourite={drawerProduct ? favourites.has(drawerProduct.id) : false}
+        onToggleFavourite={() => { if (drawerProduct) { toggleFavMutation.mutate(drawerProduct.id); analytics.productFavourited(drawerProduct.sku ?? "", favourites.has(drawerProduct.id) ? "removed" : "added"); } }}
+        onAddToBasket={(qty) => {
+          if (!drawerProduct) return;
+          const partnerPrice = (drawerProduct.list_price_usd ?? 0) * (1 - discount);
+          addItem({
+            product_id: drawerProduct.id,
+            sku: drawerProduct.sku ?? "",
+            name: drawerProduct.name ?? "",
+            category: drawerProduct.category,
+            list_price_usd: drawerProduct.list_price_usd ?? 0,
+          }, qty);
+          analytics.addToBasket(drawerProduct.sku ?? "", drawerProduct.name ?? "", partnerPrice);
+          toast.success("Added to basket");
+        }}
+      />
     </div>
   );
 }
