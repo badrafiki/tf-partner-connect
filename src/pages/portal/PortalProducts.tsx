@@ -347,7 +347,7 @@ export default function PortalProducts() {
                     </div>
                   </div>
 
-                  <div className="p-4 pt-3">
+                  <div className="p-4 pt-3" onClick={(e) => e.stopPropagation()}>
                     {justAdded ? (
                       <div className="h-10 flex items-center justify-center text-emerald-600 font-medium text-sm gap-1">
                         <Check className="h-4 w-4" /> Added to basket!
