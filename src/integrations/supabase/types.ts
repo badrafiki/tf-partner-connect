@@ -555,6 +555,7 @@ export type Database = {
           modusys_product_id: string | null
           modusys_synced_at: string | null
           name: string
+          product_url: string | null
           sku: string
           stock_qty: number | null
           updated_at: string | null
@@ -571,6 +572,7 @@ export type Database = {
           modusys_product_id?: string | null
           modusys_synced_at?: string | null
           name: string
+          product_url?: string | null
           sku: string
           stock_qty?: number | null
           updated_at?: string | null
@@ -587,6 +589,7 @@ export type Database = {
           modusys_product_id?: string | null
           modusys_synced_at?: string | null
           name?: string
+          product_url?: string | null
           sku?: string
           stock_qty?: number | null
           updated_at?: string | null
@@ -747,6 +750,7 @@ export type Database = {
           id: string | null
           list_price_usd: number | null
           name: string | null
+          product_url: string | null
           sku: string | null
           stock_qty: number | null
           updated_at: string | null
@@ -760,6 +764,7 @@ export type Database = {
           id?: string | null
           list_price_usd?: number | null
           name?: string | null
+          product_url?: string | null
           sku?: string | null
           stock_qty?: number | null
           updated_at?: string | null
@@ -773,6 +778,7 @@ export type Database = {
           id?: string | null
           list_price_usd?: number | null
           name?: string | null
+          product_url?: string | null
           sku?: string | null
           stock_qty?: number | null
           updated_at?: string | null
