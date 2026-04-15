@@ -42,6 +42,7 @@ export default function PortalProducts() {
   const [addingCard, setAddingCard] = useState<string | null>(null);
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [addedItems, setAddedItems] = useState<Set<string>>(new Set());
+  const [drawerProduct, setDrawerProduct] = useState<any>(null);
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(searchInput), 300);
