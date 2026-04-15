@@ -12,6 +12,7 @@ import { useInfiniteQuery, useQuery, useMutation, useQueryClient } from "@tansta
 import { toast } from "sonner";
 import { useBasket } from "@/contexts/BasketContext";
 import { analytics } from "@/lib/analytics";
+import ProductDetailDrawer from "@/components/portal/ProductDetailDrawer";
 
 type SortKey = "name-asc" | "price-low" | "price-high" | "stock-first";
 const PAGE_SIZE = 24;
