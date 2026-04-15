@@ -24,6 +24,36 @@ function calcMargin(list: number, cost: number | null) {
   return ((list - cost) / list) * 100;
 }
 
+function ProductUrlCell({ product, onSave }: { product: Product; onSave: (url: string) => void }) {
+  const [editing, setEditing] = useState(false);
+  const [url, setUrl] = useState((product as any).product_url || "");
+  const currentUrl = (product as any).product_url;
+
+  return (
+    <Popover open={editing} onOpenChange={setEditing}>
+      <PopoverTrigger asChild>
+        <button className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary">
+          {currentUrl ? <ExternalLink className="h-3 w-3" /> : <Link className="h-3 w-3" />}
+          {currentUrl ? "Edit" : "Add"}
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-80 p-3 space-y-2" align="start">
+        <p className="text-xs font-medium">Product URL</p>
+        <Input
+          placeholder="https://tf-usa.com/product/..."
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
+          className="text-sm"
+        />
+        <div className="flex gap-2 justify-end">
+          <Button variant="outline" size="sm" onClick={() => setEditing(false)}>Cancel</Button>
+          <Button size="sm" onClick={() => { onSave(url); setEditing(false); }}>Save</Button>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 export default function AdminProducts() {
   const [search, setSearch] = useState("");
   const [familyFilter, setFamilyFilter] = useState<string>("all");
