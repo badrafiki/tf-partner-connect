@@ -87,6 +87,17 @@ export default function AdminProducts() {
     },
   });
 
+  const updateUrl = useMutation({
+    mutationFn: async ({ id, url }: { id: string; url: string }) => {
+      const { error } = await supabase.from("products").update({ product_url: url || null }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+      toast.success("Product URL updated");
+    },
+  });
+
   const handleSync = async () => {
     setSyncing(true);
     try {
