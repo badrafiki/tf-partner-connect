@@ -244,6 +244,7 @@ export default function AdminProducts() {
                 <TableHead className="text-right">Cost Price</TableHead>
                 <TableHead className="text-right">Margin</TableHead>
                 <TableHead>ModuSys ID</TableHead>
+                <TableHead>URL</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="w-16">Visibility</TableHead>
               </TableRow>
@@ -273,6 +274,9 @@ export default function AdminProducts() {
                       ) : (
                         <Badge variant="outline" className="text-xs bg-gray-100 text-gray-600">Manual</Badge>
                       )}
+                    </TableCell>
+                    <TableCell>
+                      <ProductUrlCell product={p} onSave={(url) => updateUrl.mutate({ id: p.id, url })} />
                     </TableCell>
                     <TableCell>
                       <Badge variant={p.hidden ? "outline" : "default"} className={!p.hidden ? "bg-green-100 text-green-800 border-green-200" : ""}>
