@@ -16,6 +16,7 @@ interface IncomingProduct {
   list_price_usd: number;
   cost_price_usd: number;
   is_active: boolean;
+  product_url: string | null;
 }
 
 Deno.serve(async (req) => {
