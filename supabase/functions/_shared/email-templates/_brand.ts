@@ -8,7 +8,7 @@ export const BORDER = '#E5E7EB'
 
 export const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif', margin: 0, padding: 0 }
 export const outer = { backgroundColor: BG, padding: '0' }
-export const header = { backgroundColor: NAVY, padding: '20px 32px' }
+export const header = { backgroundColor: '#ffffff', padding: '24px 32px', textAlign: 'center' as const, borderBottom: `3px solid ${NAVY}` }
 export const brandName = { fontSize: '22px', fontWeight: 'bold' as const, color: '#FFFFFF', letterSpacing: '0.5px', margin: 0 }
 export const brandRed = { color: RED }
 export const brandSub = { fontSize: '11px', color: '#9CA3AF', letterSpacing: '2px', margin: '2px 0 0' }

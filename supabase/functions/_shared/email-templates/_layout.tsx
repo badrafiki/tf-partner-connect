@@ -1,7 +1,9 @@
 /// <reference types="npm:@types/react@18.3.1" />
 import * as React from 'npm:react@18.3.1'
-import { Body, Container, Head, Html, Preview, Section, Text } from 'npm:@react-email/components@0.0.22'
-import { main, outer, header, brandName, brandRed, brandSub, container, footerWrap, footerText, footerMuted, footerLinks, footerLink } from './_brand.ts'
+import { Body, Container, Head, Html, Img, Preview, Section, Text } from 'npm:@react-email/components@0.0.22'
+import { main, outer, header, container, footerWrap, footerText, footerMuted, footerLinks, footerLink } from './_brand.ts'
+
+const LOGO_URL = 'https://aiaeezktxgervrnmqszo.supabase.co/storage/v1/object/public/email-assets/tf-logo.png'
 
 interface LayoutProps {
   preview: string
@@ -15,8 +17,7 @@ export const Layout = ({ preview, children }: LayoutProps) => (
     <Body style={main}>
       <Section style={outer}>
         <Section style={header}>
-          <Text style={brandName}>TOTAL <span style={brandRed}>FILTRATION</span></Text>
-          <Text style={brandSub}>USA</Text>
+          <Img src={LOGO_URL} alt="Total Filtration USA" width="180" style={{ display: 'block', margin: '0 auto' }} />
         </Section>
         <Container style={container}>
           {children}
