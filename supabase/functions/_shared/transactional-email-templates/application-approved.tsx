@@ -1,6 +1,8 @@
 /// <reference types="npm:@types/react@18.3.1" />
 import * as React from 'npm:react@18.3.1'
-import { Body, Button, Container, Head, Html, Preview, Section, Text } from 'npm:@react-email/components@0.0.22'
+import { Body, Button, Container, Head, Html, Img, Preview, Section, Text } from 'npm:@react-email/components@0.0.22'
+
+const LOGO_URL = 'https://aiaeezktxgervrnmqszo.supabase.co/storage/v1/object/public/email-assets/tf-logo.png'
 import type { TemplateEntry } from './registry.ts'
 
 const NAVY = '#1B3A6B'
@@ -31,8 +33,7 @@ const ApplicationApprovedEmail = ({
     <Body style={main}>
       <Section style={outer}>
         <Section style={header}>
-          <Text style={brandName}>TOTAL <span style={brandRed}>FILTRATION</span></Text>
-          <Text style={brandSub}>USA</Text>
+          <Img src={LOGO_URL} alt="Total Filtration USA" width="180" style={{ display: 'block', margin: '0 auto' }} />
         </Section>
         <Container style={container}>
           <Text style={h1}>Welcome to TF USA{contactName ? `, ${contactName}` : ''}!</Text>
@@ -90,10 +91,7 @@ export const template = {
 
 const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif', margin: 0, padding: 0 }
 const outer = { backgroundColor: BG, padding: '0' }
-const header = { backgroundColor: NAVY, padding: '20px 32px' }
-const brandName = { fontSize: '22px', fontWeight: 'bold' as const, color: '#FFFFFF', letterSpacing: '0.5px', margin: 0 }
-const brandRed = { color: RED }
-const brandSub = { fontSize: '11px', color: '#9CA3AF', letterSpacing: '2px', margin: '2px 0 0' }
+const header = { backgroundColor: '#ffffff', padding: '24px 32px', textAlign: 'center' as const, borderBottom: `3px solid ${NAVY}` }
 const container = { backgroundColor: '#ffffff', maxWidth: '600px', margin: '32px auto', padding: '32px', border: `1px solid ${BORDER}`, borderRadius: '8px' }
 const h1 = { fontSize: '22px', fontWeight: 600 as const, color: NAVY, margin: '0 0 16px' }
 const text = { fontSize: '15px', color: TEXT, lineHeight: '1.6', margin: '0 0 16px' }

@@ -36,7 +36,7 @@ const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
 }
 
 // Configuration
-const SITE_NAME = "tf-partner-connect"
+const SITE_NAME = "TFUSA Partner Platform"
 const SENDER_DOMAIN = "notify.partners.total-filtration.com"
 const ROOT_DOMAIN = "partners.total-filtration.com"
 const FROM_DOMAIN = "partners.total-filtration.com" // Domain shown in From address (may be root or sender subdomain)
