@@ -590,6 +590,180 @@ function ModuSysStatusCell({ partner, onSynced }: { partner: Partner; onSynced: 
   );
 }
 
+/* ───── Resend Approval Email Modal ───── */
+type SendStatus = "pending" | "sending" | "sent" | "failed";
+interface SendProgress {
+  partnerId: string;
+  companyName: string;
+  email: string;
+  status: SendStatus;
+  error?: string;
+}
+
+function ResendApprovalModal({
+  open,
+  onClose,
+  partners,
+}: {
+  open: boolean;
+  onClose: () => void;
+  partners: Partner[];
+}) {
+  const [phase, setPhase] = useState<"confirm" | "sending" | "done">("confirm");
+  const [progress, setProgress] = useState<SendProgress[]>([]);
+
+  useEffect(() => {
+    if (open) {
+      setPhase("confirm");
+      setProgress(
+        partners.map(p => ({
+          partnerId: p.id,
+          companyName: p.company_name,
+          email: p.contact_email,
+          status: "pending",
+        }))
+      );
+    }
+  }, [open, partners]);
+
+  const handleSend = async () => {
+    setPhase("sending");
+    for (const p of partners) {
+      setProgress(prev =>
+        prev.map(r => (r.partnerId === p.id ? { ...r, status: "sending" } : r))
+      );
+      try {
+        const { data, error } = await supabase.functions.invoke("send-transactional-email", {
+          body: {
+            templateName: "application-approved",
+            recipientEmail: p.contact_email,
+            idempotencyKey: `approval-resend-${p.id}-${Date.now()}`,
+            templateData: {
+              companyName: p.company_name,
+              tier: p.tier_label,
+              discountPercentage: Number(p.discount_percentage) || 0,
+              loginUrl: "https://partners.total-filtration.com/reset-password",
+            },
+          },
+        });
+        if (error) throw error;
+        if (data?.error) throw new Error(data.error);
+        setProgress(prev =>
+          prev.map(r => (r.partnerId === p.id ? { ...r, status: "sent" } : r))
+        );
+      } catch (err: any) {
+        setProgress(prev =>
+          prev.map(r =>
+            r.partnerId === p.id
+              ? { ...r, status: "failed", error: err.message || "Send failed" }
+              : r
+          )
+        );
+      }
+    }
+    setPhase("done");
+  };
+
+  const sentCount = progress.filter(r => r.status === "sent").length;
+  const failedCount = progress.filter(r => r.status === "failed").length;
+  const total = progress.length;
+
+  return (
+    <Dialog open={open} onOpenChange={v => { if (!v && phase !== "sending") onClose(); }}>
+      <DialogContent className="max-w-[560px]">
+        <DialogHeader>
+          <DialogTitle>
+            {phase === "confirm" && "Resend approval email"}
+            {phase === "sending" && "Sending approval emails..."}
+            {phase === "done" && "Resend complete"}
+          </DialogTitle>
+          <DialogDescription>
+            {phase === "confirm" &&
+              `This will send the branded "Application Approved" email to ${total} selected partner${total === 1 ? "" : "s"}, including a "Get your login" link.`}
+            {phase === "sending" &&
+              `Processing ${total} email${total === 1 ? "" : "s"}. Please don't close this window.`}
+            {phase === "done" &&
+              `${sentCount} sent${failedCount > 0 ? `, ${failedCount} failed` : ""}.`}
+          </DialogDescription>
+        </DialogHeader>
+
+        {phase === "confirm" ? (
+          <div className="max-h-[280px] overflow-y-auto border rounded-md divide-y">
+            {progress.map(r => (
+              <div key={r.partnerId} className="px-3 py-2 text-sm flex items-center justify-between">
+                <span className="font-medium">{r.companyName}</span>
+                <span className="text-xs text-muted-foreground">{r.email}</span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <div className="text-xs text-muted-foreground">
+              Progress: {sentCount + failedCount} / {total}
+            </div>
+            <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+              <div
+                className="h-full bg-primary transition-all"
+                style={{ width: `${total === 0 ? 0 : ((sentCount + failedCount) / total) * 100}%` }}
+              />
+            </div>
+            <div className="max-h-[280px] overflow-y-auto border rounded-md divide-y mt-2">
+              {progress.map(r => (
+                <div key={r.partnerId} className="px-3 py-2 text-sm flex items-center justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="font-medium truncate">{r.companyName}</p>
+                    <p className="text-xs text-muted-foreground truncate">{r.email}</p>
+                    {r.error && <p className="text-xs text-destructive mt-0.5">{r.error}</p>}
+                  </div>
+                  <div className="shrink-0">
+                    {r.status === "pending" && (
+                      <Badge variant="outline" className="text-xs">Pending</Badge>
+                    )}
+                    {r.status === "sending" && (
+                      <Badge variant="outline" className="text-xs">
+                        <Loader2 className="h-3 w-3 mr-1 animate-spin" />Sending
+                      </Badge>
+                    )}
+                    {r.status === "sent" && (
+                      <Badge className="bg-green-100 text-green-800 border-green-200 text-xs">
+                        <CheckCircle2 className="h-3 w-3 mr-1" />Sent
+                      </Badge>
+                    )}
+                    {r.status === "failed" && (
+                      <Badge variant="destructive" className="text-xs">
+                        <AlertCircle className="h-3 w-3 mr-1" />Failed
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <DialogFooter>
+          {phase === "confirm" && (
+            <>
+              <Button variant="outline" onClick={onClose}>Cancel</Button>
+              <Button onClick={handleSend} disabled={total === 0}>
+                <Mail className="h-4 w-4 mr-1" />Send to {total} partner{total === 1 ? "" : "s"}
+              </Button>
+            </>
+          )}
+          {phase === "sending" && (
+            <Button disabled>
+              <Loader2 className="h-4 w-4 mr-1 animate-spin" />Sending...
+            </Button>
+          )}
+          {phase === "done" && (
+            <Button onClick={onClose}>Done</Button>
+          )}
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 /* ───── Main Page ───── */
 export default function AdminDistributors() {
   const [search, setSearch] = useState("");
@@ -597,6 +771,8 @@ export default function AdminDistributors() {
   const [selected, setSelected] = useState<Partner | null>(null);
   const [selectedTab, setSelectedTab] = useState<string>("details");
   const [addOpen, setAddOpen] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [resendOpen, setResendOpen] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: partners = [], isLoading } = useQuery({
