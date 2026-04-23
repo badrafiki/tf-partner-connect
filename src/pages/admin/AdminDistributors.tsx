@@ -834,6 +834,31 @@ export default function AdminDistributors() {
     { value: "inactive" as const, label: "Inactive" },
   ];
 
+  const allSelected = filtered.length > 0 && filtered.every(p => selectedIds.has(p.id));
+  const someSelected = filtered.some(p => selectedIds.has(p.id));
+  const toggleAll = () => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (allSelected) {
+        filtered.forEach(p => next.delete(p.id));
+      } else {
+        filtered.forEach(p => next.add(p.id));
+      }
+      return next;
+    });
+  };
+  const toggleOne = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+  const selectedPartners = useMemo(
+    () => partners.filter(p => selectedIds.has(p.id)),
+    [partners, selectedIds]
+  );
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -857,6 +882,19 @@ export default function AdminDistributors() {
             </Button>
           ))}
         </div>
+        {selectedIds.size > 0 && (
+          <div className="flex items-center gap-2 sm:ml-auto">
+            <span className="text-sm text-muted-foreground">
+              {selectedIds.size} selected
+            </span>
+            <Button size="sm" variant="outline" onClick={() => setSelectedIds(new Set())}>
+              Clear
+            </Button>
+            <Button size="sm" onClick={() => setResendOpen(true)}>
+              <Mail className="h-4 w-4 mr-1" />Resend approval email
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Table */}
