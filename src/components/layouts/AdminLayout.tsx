@@ -44,6 +44,19 @@ function SidebarNav({ onNav }: { onNav?: () => void }) {
     refetchInterval: 60000,
   });
 
+  const { data: dlqCount = 0 } = useQuery({
+    queryKey: ["admin-email-dlq-total"],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_email_dlq_stats");
+      if (error) return 0;
+      return (data as { dlq_count: number }[]).reduce(
+        (s, r) => s + Number(r.dlq_count || 0),
+        0,
+      );
+    },
+    refetchInterval: 60000,
+  });
+
   const handleSignOut = async () => {
     await signOut();
     navigate("/login");
@@ -79,6 +92,11 @@ function SidebarNav({ onNav }: { onNav?: () => void }) {
             {link.label === "Applications" && pendingCount > 0 && (
               <span className="ml-auto bg-accent text-accent-foreground text-[10px] font-bold rounded-full h-5 min-w-[20px] px-1.5 flex items-center justify-center">
                 {pendingCount}
+              </span>
+            )}
+            {link.label === "Emails" && dlqCount > 0 && (
+              <span className="ml-auto bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full h-5 min-w-[20px] px-1.5 flex items-center justify-center">
+                {dlqCount}
               </span>
             )}
           </NavLink>
