@@ -12,6 +12,7 @@ import {
   Zap,
   LogOut,
   Menu,
+  Mail,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
@@ -24,6 +25,7 @@ const adminLinks = [
   { to: "/admin/enquiries", label: "Enquiries", icon: ShoppingCart },
   { to: "/admin/quotations", label: "Quotations", icon: FileCheck },
   { to: "/admin/erp-sync", label: "ERP Sync", icon: Zap },
+  { to: "/admin/emails", label: "Emails", icon: Mail },
 ];
 
 function SidebarNav({ onNav }: { onNav?: () => void }) {
@@ -38,6 +40,19 @@ function SidebarNav({ onNav }: { onNav?: () => void }) {
         .select("id", { count: "exact", head: true })
         .eq("status", "pending");
       return count || 0;
+    },
+    refetchInterval: 60000,
+  });
+
+  const { data: dlqCount = 0 } = useQuery({
+    queryKey: ["admin-email-dlq-total"],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_email_dlq_stats");
+      if (error) return 0;
+      return (data as { dlq_count: number }[]).reduce(
+        (s, r) => s + Number(r.dlq_count || 0),
+        0,
+      );
     },
     refetchInterval: 60000,
   });
@@ -77,6 +92,11 @@ function SidebarNav({ onNav }: { onNav?: () => void }) {
             {link.label === "Applications" && pendingCount > 0 && (
               <span className="ml-auto bg-accent text-accent-foreground text-[10px] font-bold rounded-full h-5 min-w-[20px] px-1.5 flex items-center justify-center">
                 {pendingCount}
+              </span>
+            )}
+            {link.label === "Emails" && dlqCount > 0 && (
+              <span className="ml-auto bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full h-5 min-w-[20px] px-1.5 flex items-center justify-center">
+                {dlqCount}
               </span>
             )}
           </NavLink>

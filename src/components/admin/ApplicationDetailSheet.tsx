@@ -144,10 +144,27 @@ export function ApplicationDetailSheet({ application, onClose, onRefresh }: Prop
         })
         .eq("id", app.id);
 
+      // 5. Send branded "You're approved — get your login" email (in addition
+      //    to the magic-link from invite-partner). Non-blocking.
+      supabase.functions.invoke("send-transactional-email", {
+        body: {
+          templateName: "application-approved",
+          recipientEmail: app.contact_email,
+          idempotencyKey: `approved-${app.id}`,
+          templateData: {
+            companyName: app.legal_business_name,
+            contactName: app.contact_first_name,
+            tier,
+            discountPercentage: discount,
+            loginUrl: "https://partners.total-filtration.com/reset-password",
+          },
+        },
+      }).catch((e) => console.error("Approval email failed:", e));
+
       if (modusysSynced) {
-        toast.success("Partner approved. Invitation sent. Customer record created in ModuSys.");
+        toast.success("Partner approved. Welcome email sent. Customer record created in ModuSys.");
       } else {
-        toast.success("Partner approved. Invitation sent.");
+        toast.success("Partner approved. Welcome email sent.");
         toast.warning("ModuSys sync failed — retry from ERP Sync page.");
       }
       setShowApproveDialog(false);
