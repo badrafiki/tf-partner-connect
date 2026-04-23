@@ -999,6 +999,11 @@ export default function AdminDistributors() {
 
       <DistributorDetailSheet partner={selected} open={!!selected} onClose={() => setSelected(null)} onPartnerUpdated={handlePartnerSynced} initialTab={selectedTab} />
       <AddDistributorSheet open={addOpen} onClose={() => setAddOpen(false)} />
+      <ResendApprovalModal
+        open={resendOpen}
+        onClose={() => { setResendOpen(false); setSelectedIds(new Set()); }}
+        partners={selectedPartners}
+      />
     </div>
   );
 }
