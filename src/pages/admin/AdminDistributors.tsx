@@ -911,6 +911,13 @@ export default function AdminDistributors() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-10">
+                  <Checkbox
+                    checked={allSelected ? true : (someSelected ? "indeterminate" : false)}
+                    onCheckedChange={toggleAll}
+                    aria-label="Select all"
+                  />
+                </TableHead>
                 <TableHead>Company</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>State</TableHead>
@@ -926,6 +933,13 @@ export default function AdminDistributors() {
             <TableBody>
               {filtered.map(p => (
                 <TableRow key={p.id} className="cursor-pointer" onClick={() => { setSelectedTab("details"); setSelected(p); }}>
+                  <TableCell onClick={e => e.stopPropagation()}>
+                    <Checkbox
+                      checked={selectedIds.has(p.id)}
+                      onCheckedChange={() => toggleOne(p.id)}
+                      aria-label={`Select ${p.company_name}`}
+                    />
+                  </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <Avatar className="h-6 w-6">
