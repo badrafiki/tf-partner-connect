@@ -16,6 +16,7 @@ import PendingActivationPage from "@/pages/PendingActivationPage";
 import PrivacyPolicyPage from "@/pages/PrivacyPolicyPage";
 import TermsPage from "@/pages/TermsPage";
 import CookiePolicyPage from "@/pages/CookiePolicyPage";
+import UnsubscribePage from "@/pages/UnsubscribePage";
 
 import PortalDashboard from "@/pages/portal/PortalDashboard";
 import PortalProducts from "@/pages/portal/PortalProducts";
@@ -32,6 +33,7 @@ import AdminProducts from "@/pages/admin/AdminProducts";
 import AdminEnquiries from "@/pages/admin/AdminEnquiries";
 import AdminQuotations from "@/pages/admin/AdminQuotations";
 import AdminErpSync from "@/pages/admin/AdminErpSync";
+import AdminEmails from "@/pages/admin/AdminEmails";
 
 import NotFound from "@/pages/NotFound";
 import { RouteTracker } from "@/components/analytics/RouteTracker";
@@ -57,6 +59,7 @@ const App = () => (
             <Route path="/privacy" element={<PrivacyPolicyPage />} />
             <Route path="/terms" element={<TermsPage />} />
             <Route path="/cookies" element={<CookiePolicyPage />} />
+            <Route path="/unsubscribe" element={<UnsubscribePage />} />
 
             {/* Partner Portal */}
             <Route
@@ -94,6 +97,7 @@ const App = () => (
               <Route path="enquiries" element={<AdminEnquiries />} />
               <Route path="quotations" element={<AdminQuotations />} />
               <Route path="erp-sync" element={<AdminErpSync />} />
+              <Route path="emails" element={<AdminEmails />} />
             </Route>
 
 

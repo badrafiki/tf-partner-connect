@@ -12,6 +12,7 @@ import {
   Zap,
   LogOut,
   Menu,
+  Mail,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
@@ -24,6 +25,7 @@ const adminLinks = [
   { to: "/admin/enquiries", label: "Enquiries", icon: ShoppingCart },
   { to: "/admin/quotations", label: "Quotations", icon: FileCheck },
   { to: "/admin/erp-sync", label: "ERP Sync", icon: Zap },
+  { to: "/admin/emails", label: "Emails", icon: Mail },
 ];
 
 function SidebarNav({ onNav }: { onNav?: () => void }) {
