@@ -1,18 +1,8 @@
 /// <reference types="npm:@types/react@18.3.1" />
-
 import * as React from 'npm:react@18.3.1'
-
-import {
-  Body,
-  Button,
-  Container,
-  Head,
-  Heading,
-  Html,
-  Link,
-  Preview,
-  Text,
-} from 'npm:@react-email/components@0.0.22'
+import { Button, Heading, Text } from 'npm:@react-email/components@0.0.22'
+import { Layout } from './_layout.tsx'
+import { h1, text, button, small } from './_brand.ts'
 
 interface InviteEmailProps {
   siteName: string
@@ -20,60 +10,26 @@ interface InviteEmailProps {
   confirmationUrl: string
 }
 
-export const InviteEmail = ({
-  siteName,
-  siteUrl,
-  confirmationUrl,
-}: InviteEmailProps) => (
-  <Html lang="en" dir="ltr">
-    <Head />
-    <Preview>You've been invited to join {siteName}</Preview>
-    <Body style={main}>
-      <Container style={container}>
-        <Heading style={h1}>You've been invited</Heading>
-        <Text style={text}>
-          You've been invited to join{' '}
-          <Link href={siteUrl} style={link}>
-            <strong>{siteName}</strong>
-          </Link>
-          . Click the button below to accept the invitation and create your
-          account.
-        </Text>
-        <Button style={button} href={confirmationUrl}>
-          Accept Invitation
-        </Button>
-        <Text style={footer}>
-          If you weren't expecting this invitation, you can safely ignore this
-          email.
-        </Text>
-      </Container>
-    </Body>
-  </Html>
+export const InviteEmail = ({ confirmationUrl }: InviteEmailProps) => (
+  <Layout preview="Welcome to the TF USA Partner Portal — set your password">
+    <Heading style={h1}>Welcome to the TF USA Partner Portal</Heading>
+    <Text style={text}>
+      Your distributor account has been approved. To get started, click the button
+      below to set your password and sign in.
+    </Text>
+    <Button style={button} href={confirmationUrl}>Set Password &amp; Sign In</Button>
+    <Text style={text}>
+      Once signed in, you'll be able to browse our product catalogue, request
+      quotations, place orders, and manage your account.
+    </Text>
+    <Text style={small}>
+      Questions? Reach out at{' '}
+      <a href="mailto:partners@total-filtration.com" style={{ color: '#1B3A6B', fontWeight: 600, textDecoration: 'none' }}>
+        partners@total-filtration.com
+      </a>.
+    </Text>
+    <Text style={small}>The TF USA Team</Text>
+  </Layout>
 )
 
 export default InviteEmail
-
-const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif' }
-const container = { padding: '20px 25px' }
-const h1 = {
-  fontSize: '22px',
-  fontWeight: 'bold' as const,
-  color: '#000000',
-  margin: '0 0 20px',
-}
-const text = {
-  fontSize: '14px',
-  color: '#55575d',
-  lineHeight: '1.5',
-  margin: '0 0 25px',
-}
-const link = { color: 'inherit', textDecoration: 'underline' }
-const button = {
-  backgroundColor: '#000000',
-  color: '#ffffff',
-  fontSize: '14px',
-  borderRadius: '8px',
-  padding: '12px 20px',
-  textDecoration: 'none',
-}
-const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
