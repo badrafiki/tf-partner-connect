@@ -946,6 +946,37 @@ export type Database = {
       }
     }
     Functions: {
+      admin_email_log_stats: {
+        Args: never
+        Returns: {
+          status: string
+          total: number
+        }[]
+      }
+      admin_email_log_templates: {
+        Args: never
+        Returns: {
+          template_name: string
+        }[]
+      }
+      admin_list_email_log: {
+        Args: {
+          p_limit?: number
+          p_offset?: number
+          p_search?: string
+          p_status?: string
+          p_template?: string
+        }
+        Returns: {
+          created_at: string
+          error_message: string
+          id: string
+          message_id: string
+          recipient_email: string
+          status: string
+          template_name: string
+        }[]
+      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
@@ -960,6 +991,13 @@ export type Database = {
           category: string
           family: string
           product_count: number
+        }[]
+      }
+      get_email_dlq_stats: {
+        Args: never
+        Returns: {
+          dlq_count: number
+          queue_name: string
         }[]
       }
       get_partner_visible_products: {
