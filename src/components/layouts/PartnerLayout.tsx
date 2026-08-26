@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useBasket } from "@/contexts/BasketContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Bell, Menu, ShoppingCart, User, LogOut, ChevronDown, Tag, Package, FileText, X } from "lucide-react";
+import { Bell, Menu, ShoppingCart, User, LogOut, ChevronDown, Package, FileText, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
@@ -39,7 +39,7 @@ function relativeTime(dateStr: string) {
 }
 
 const notifIcons: Record<string, { icon: typeof Bell; color: string }> = {
-  price_change: { icon: Tag, color: "text-amber-500" },
+  
   stock_update: { icon: Package, color: "text-blue-500" },
   quotation_issued: { icon: FileText, color: "text-green-500" },
   general: { icon: Bell, color: "text-muted-foreground" },

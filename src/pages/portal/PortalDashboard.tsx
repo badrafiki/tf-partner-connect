@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import {
-  FileText, ShoppingCart, DollarSign, Percent, Tag, Package, Bell,
+  FileText, ShoppingCart, DollarSign, Percent, Package, Bell,
   Mail, Truck
 } from "lucide-react";
 
@@ -19,7 +19,7 @@ const tierColors: Record<string, { bg: string; text: string }> = {
 };
 
 const notifIcons: Record<string, { icon: typeof Bell; color: string }> = {
-  price_change: { icon: Tag, color: "text-amber-500" },
+  
   stock_update: { icon: Package, color: "text-blue-500" },
   quotation_issued: { icon: FileText, color: "text-green-500" },
   order_update: { icon: Truck, color: "text-purple-500" },
